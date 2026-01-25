@@ -12,6 +12,11 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.SmartCampusCompanionApp">
         <activity
+            android:name=".dashboard.DashboardFragment.kt"
+            android:exported="false"
+            android:label="@string/title_activity_dashboard_fragment.kt"
+            android:theme="@style/Theme.SmartCampusCompanionApp" />
+        <activity
             android:name=".MainActivity"
             android:exported="true"
             android:label="@string/app_name"

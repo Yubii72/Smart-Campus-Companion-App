@@ -1,3 +1,19 @@
 <resources>
     <string name="app_name">Smart Campus Companion App</string>
+    <string name="title_activity_dashboard_fragment.kt">DashboardFragment.kt</string>
+    
+    <!-- Dashboard Strings -->
+    <string name="dashboard_welcome">Welcome back,</string>
+    <string name="dashboard_subtitle">Your campus companion is here to help!</string>
+    <string name="dashboard_quick_access">Quick Access</string>
+    
+    <!-- Navigation Items -->
+    <string name="nav_campus_info">Campus Information</string>
+    <string name="nav_campus_info_desc">View departments and contact info</string>
+    <string name="nav_announcements">Announcements</string>
+    <string name="nav_announcements_desc">Read campus updates</string>
+    <string name="nav_schedule">Schedule</string>
+    <string name="nav_schedule_desc">Manage your academic tasks</string>
+    <string name="nav_settings">Settings</string>
+    <string name="nav_settings_desc">Personalize app preferences</string>
 </resources>

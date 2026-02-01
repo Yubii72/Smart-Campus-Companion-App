@@ -7,8 +7,10 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import com.example.smartcampuscompanionapp.ui.dashboard.DashboardScreen
+import com.example.smartcampuscompanionapp.ui.login.LoginScreen
 import com.example.smartcampuscompanionapp.ui.theme.SmartCampusCompanionAppTheme
 
 class MainActivity : ComponentActivity() {
@@ -21,13 +23,20 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    DashboardScreen(
-                        username = "Student",
-                        onNavigationItemClick = { item ->
-                            // Handle navigation item clicks
-                            // This will be implemented when navigation is set up
-                        }
-                    )
+                    var isLoggedIn by remember { mutableStateOf(false) }
+
+                    if (isLoggedIn) {
+                        DashboardScreen(
+                            username = "admin",
+                            onNavigationItemClick = { item ->
+                                // Handle navigation item clicks
+                            }
+                        )
+                    } else {
+                        LoginScreen(onLoginSuccess = {
+                            isLoggedIn = true
+                        })
+                    }
                 }
             }
         }

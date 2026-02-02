@@ -8,6 +8,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.School
 import androidx.compose.material3.*
@@ -34,6 +35,7 @@ fun DashboardScreen(
     username: String = "Student",
     onNavigationItemClick: (String) -> Unit = {}
 ) {
+    // List of dashboard navigation items
     val navigationItems = listOf(
         NavigationItem(
             title = "Campus Information",
@@ -57,6 +59,7 @@ fun DashboardScreen(
         )
     )
 
+    // Scaffold layout providing a top app bar and content area
     Scaffold(
         topBar = {
             TopAppBar(
@@ -80,6 +83,7 @@ fun DashboardScreen(
                 .padding(paddingValues)
                 .padding(horizontal = 16.dp)
         ) {
+
             // Welcome Section
             WelcomeSection(
                 username = username,
@@ -114,6 +118,7 @@ fun DashboardScreen(
     }
 }
 
+// Composable for the welcome section card
 @Composable
 fun WelcomeSection(
     username: String,
@@ -127,34 +132,54 @@ fun WelcomeSection(
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
-        Column(
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(24.dp),
-            horizontalAlignment = Alignment.Start
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
-                text = "Welcome back,",
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = username,
-                style = MaterialTheme.typography.headlineMedium,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onPrimaryContainer
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = "Your campus companion is here to help!",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
-            )
+
+            // Added profile icon
+            Surface(
+                shape = RoundedCornerShape(50),
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(52.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Person,
+                    contentDescription = "Profile Icon",
+                    tint = MaterialTheme.colorScheme.onPrimary,
+                    modifier = Modifier.padding(12.dp)
+                )
+            }
+
+            Spacer(modifier = Modifier.width(16.dp))
+
+            Column {
+                Text(
+                    text = "Welcome back,",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = username,
+                    style = MaterialTheme.typography.headlineMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "Your campus companion is here to help!",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
+                )
+            }
         }
     }
 }
 
+// Composable for an individual navigation card
 @Composable
 fun NavigationCard(
     item: NavigationItem,
@@ -204,6 +229,7 @@ fun NavigationCard(
     }
 }
 
+// Preview for light mode
 @Preview(showBackground = true)
 @Composable
 fun DashboardScreenPreview() {
@@ -212,6 +238,7 @@ fun DashboardScreenPreview() {
     }
 }
 
+// Preview for dark mode
 @Preview(showBackground = true, uiMode = android.content.res.Configuration.UI_MODE_NIGHT_YES)
 @Composable
 fun DashboardScreenDarkPreview() {

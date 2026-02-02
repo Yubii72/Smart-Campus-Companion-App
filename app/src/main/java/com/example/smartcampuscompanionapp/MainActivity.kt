@@ -28,6 +28,7 @@ class MainActivity : ComponentActivity() {
                     color = MaterialTheme.colorScheme.background
                 ) {
                     var isLoggedIn by remember { mutableStateOf(false) }
+                    //for dashboard
                     var currentScreen by remember { mutableStateOf("Dashboard") }
                     var selectedCollege by remember { mutableStateOf<College?>(null) }
 

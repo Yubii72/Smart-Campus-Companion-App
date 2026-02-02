@@ -36,7 +36,8 @@ data class College(
     val description: String = "",
     val socialMedia: SocialMedia = SocialMedia(),
     val phoneNumber: String = "N/A",
-    val programs: List<String> = emptyList(),
+    val undergraduatePrograms: List<String> = emptyList(),
+    val graduatePrograms: List<String> = emptyList(),
     val studentOrgs: List<StudentOrg> = emptyList(),
     val orgChart: OrgMember? = null
 )
@@ -95,7 +96,7 @@ val colleges = listOf(
                 )
             )
         ),
-        programs = listOf(
+        undergraduatePrograms = listOf(
             "Bachelor of Science in Information Technology",
             "Bachelor of Science in Computer Science"
         ),
@@ -136,6 +137,12 @@ val colleges = listOf(
             email = "pnccas23@gmail.com",
             facebook = "https://www.facebook.com/pnccascsg",
             youtube = "https://www.youtube.com/pnccas23"
+        ),
+        undergraduatePrograms = listOf(
+            "Bachelor of Science in Psychology"
+        ),
+        graduatePrograms = listOf(
+            "Master of Arts in Psychology"
         )
     ),
     College(
@@ -147,6 +154,11 @@ val colleges = listOf(
         socialMedia = SocialMedia(
             facebook = "https://www.facebook.com/pnccoe",
             instagram = "https://www.instagram.com/pnccoe"
+        ),
+        undergraduatePrograms = listOf(
+            "Bachelor of Science in Computer Engineering",
+            "Bachelor of Science in Electronics Engineering",
+            "Bachelor of Science in Industrial Engineering"
         )
     ),
     College(
@@ -159,7 +171,15 @@ val colleges = listOf(
             email = "pnccbaa@gmail.com",
             facebook = "https://www.facebook.com/pnccbaacsg"
         ),
-        phoneNumber = "0946 462 6858"
+        phoneNumber = "0946 462 6858",
+        undergraduatePrograms = listOf(
+            "Bachelor of Science in Accountancy",
+            "Bachelor of Science in Business Administration Major in Marketing Management",
+            "Bachelor of Science in Business Administration Major in Financial Management"
+        ),
+        graduatePrograms = listOf(
+            "Master in Business Administration"
+        )
     ),
     College(
         id = "CHAS",
@@ -170,6 +190,9 @@ val colleges = listOf(
         socialMedia = SocialMedia(
             email = "chas.new.email@gmail.com",
             facebook = "https://www.facebook.com/CHASPnC"
+        ),
+        undergraduatePrograms = listOf(
+            "Bachelor of Science in Nursing"
         )
     ),
     College(
@@ -181,6 +204,20 @@ val colleges = listOf(
         socialMedia = SocialMedia(
             email = "coedcsg@pnc.edu.ph",
             facebook = "https://www.facebook.com/PnCCOED"
+        ),
+        undergraduatePrograms = listOf(
+            "Bachelor of Secondary Education Major in Social Studies",
+            "Bachelor of Secondary Education Major in Mathematics",
+            "Bachelor of Secondary Education Major in English",
+            "Bachelor of Secondary Education Major in Filipino",
+            "Bachelor of Elementary Education"
+        ),
+        graduatePrograms = listOf(
+            "Master of Arts in Education Major in Administration and Supervision",
+            "Master of Arts in Education Major in English Language Teaching",
+            "Master of Arts in Education Major in Teaching Filipino",
+            "Master of Arts in Education Major in Teaching Mathematics",
+            "Master of Arts in Education Major in Teaching Social Studies"
         )
     )
 )

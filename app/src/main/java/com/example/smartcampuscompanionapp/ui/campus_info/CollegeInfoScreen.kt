@@ -70,8 +70,8 @@ fun CollegeInfoScreen(
                 OrgChartSection(college.orgChart, college.primaryColor)
             }
 
-            if (college.programs.isNotEmpty()) {
-                ProgramsSection(college.programs)
+            if (college.undergraduatePrograms.isNotEmpty() || college.graduatePrograms.isNotEmpty()) {
+                ProgramsSection(college.undergraduatePrograms, college.graduatePrograms)
             }
 
             if (college.studentOrgs.isNotEmpty()) {
@@ -256,17 +256,44 @@ fun OrgMemberNode(member: OrgMember, backgroundColor: Color) {
 }
 
 @Composable
-fun ProgramsSection(programs: List<String>) {
+fun ProgramsSection(undergraduate: List<String>, graduate: List<String>) {
     InfoCard(title = "Programs Offered", icon = Icons.AutoMirrored.Filled.List) {
-        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            programs.forEach { program ->
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Icons.Default.CheckCircle, contentDescription = null, modifier = Modifier.size(20.dp), tint = Color(0xFF4CAF50))
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Text(text = program, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Medium)
+        Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+            // College-Offered Programs
+            if (undergraduate.isNotEmpty()) {
+                Text(
+                    text = "College–Offered Programs",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                undergraduate.forEach { program ->
+                    ProgramItem(program)
+                }
+            }
+            HorizontalDivider(thickness = 1.dp, color = MaterialTheme.colorScheme.outlineVariant)
+            // Graduate Studies-Offered Programs
+            if (graduate.isNotEmpty()) {
+                Text(
+                    text = "Graduate Studies–Offered Programs",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                graduate.forEach { program ->
+                    ProgramItem(program)
                 }
             }
         }
+    }
+}
+
+@Composable
+fun ProgramItem(name: String) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Icon(Icons.Default.CheckCircle, contentDescription = null, modifier = Modifier.size(20.dp), tint = Color(0xFF4CAF50))
+        Spacer(modifier = Modifier.width(12.dp))
+        Text(text = name, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Medium)
     }
 }
 
@@ -317,6 +344,7 @@ fun StudentOrgsSection(orgs: List<StudentOrg>) {
                         textAlign = TextAlign.Justify,
                         lineHeight = 20.sp
                     )
+
                     org.socialMedia?.let { sm ->
                         Spacer(modifier = Modifier.height(16.dp))
                         HorizontalDivider(thickness = 1.dp, color = MaterialTheme.colorScheme.outlineVariant)
@@ -344,7 +372,9 @@ fun InfoCard(title: String, icon: ImageVector, content: @Composable () -> Unit) 
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(16.dp),
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+            // Removed elevation to prevent the shadow from thickening the border's appearance
             elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+            // Changed to a thinner, softer gray (outlineVariant)
             border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
         ) {
             Box(modifier = Modifier.padding(20.dp)) {

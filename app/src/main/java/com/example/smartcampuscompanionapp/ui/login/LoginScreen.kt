@@ -66,7 +66,8 @@ fun LoginScreen(onLoginSuccess: () -> Unit) {
                 },
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp),
-                singleLine = true
+                singleLine = true,
+                isError = errorMessage?.contains("Username") == true
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -84,7 +85,8 @@ fun LoginScreen(onLoginSuccess: () -> Unit) {
                 visualTransformation = PasswordVisualTransformation(),
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp),
-                singleLine = true
+                singleLine = true,
+                isError = errorMessage?.contains("Password") == true
             )
 
             if (errorMessage != null) {
@@ -100,10 +102,19 @@ fun LoginScreen(onLoginSuccess: () -> Unit) {
 
             Button(
                 onClick = {
-                    if (username == "admin" && password == "admin123") {
+                    val validationError = when {
+                        username.isBlank() -> "Username cannot be empty"
+                        password.isBlank() -> "Password cannot be empty"
+                        username.length < 3 -> "Username is too short"
+                        password.length < 6 -> "Password must be at least 6 characters"
+                        username == "admin" && password == "admin123" -> null
+                        else -> "Invalid username or password"
+                    }
+
+                    if (validationError == null) {
                         onLoginSuccess()
                     } else {
-                        errorMessage = "Invalid username or password"
+                        errorMessage = validationError
                     }
                 },
                 modifier = Modifier

@@ -217,6 +217,7 @@ fun DashboardScreenPreview() {
     }
 }
 
+// Preview for dark mode
 @Preview(showBackground = true, uiMode = android.content.res.Configuration.UI_MODE_NIGHT_YES)
 @Composable
 fun DashboardScreenDarkPreview() {

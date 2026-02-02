@@ -272,47 +272,59 @@ fun ProgramsSection(programs: List<String>) {
 
 @Composable
 fun StudentOrgsSection(orgs: List<StudentOrg>) {
-    Text(
-        text = "Student Organization",
-        style = MaterialTheme.typography.headlineSmall,
-        fontWeight = FontWeight.ExtraBold,
-        modifier = Modifier.padding(top = 8.dp),
-    )
-    orgs.forEach { org ->
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(16.dp),
-            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)),
-            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
-        ) {
-            Column(modifier = Modifier.padding(16.dp)) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Image(
-                        painter = painterResource(id = org.logoRes),
-                        contentDescription = null,
-                        modifier = Modifier
-                            .size(60.dp)
-                            .clip(CircleShape)
-                    )
-                    Spacer(modifier = Modifier.width(16.dp))
-                    Text(text = org.name, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                }
-                Spacer(modifier = Modifier.height(12.dp))
-                Text(
-                    text = org.description,
-                    style = MaterialTheme.typography.bodyMedium,
-                    textAlign = TextAlign.Justify,
-                    lineHeight = 20.sp
-                )
-
-                org.socialMedia?.let { sm ->
-                    Spacer(modifier = Modifier.height(16.dp))
-                    HorizontalDivider(thickness = 1.dp, color = MaterialTheme.colorScheme.outlineVariant)
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(top = 8.dp)) {
+            Icon(
+                imageVector = Icons.Default.Groups,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(28.dp)
+            )
+            Spacer(modifier = Modifier.width(12.dp))
+            Text(
+                text = "Student Organizations",
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold
+            )
+        }
+        Spacer(modifier = Modifier.height(16.dp))
+        orgs.forEach { org ->
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 16.dp),
+                shape = RoundedCornerShape(16.dp),
+                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)),
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Image(
+                            painter = painterResource(id = org.logoRes),
+                            contentDescription = null,
+                            modifier = Modifier
+                                .size(60.dp)
+                                .clip(CircleShape)
+                        )
+                        Spacer(modifier = Modifier.width(16.dp))
+                        Text(text = org.name, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                    }
                     Spacer(modifier = Modifier.height(12.dp))
-                    sm.email?.let { ContactItem(Icons.Default.Email, it) }
-                    sm.facebook?.let { ContactItem(Icons.Default.Facebook, it) }
-                    sm.instagram?.let { ContactItem(Icons.Default.CameraAlt, it) }
+                    Text(
+                        text = org.description,
+                        style = MaterialTheme.typography.bodyMedium,
+                        textAlign = TextAlign.Justify,
+                        lineHeight = 20.sp
+                    )
+                    org.socialMedia?.let { sm ->
+                        Spacer(modifier = Modifier.height(16.dp))
+                        HorizontalDivider(thickness = 1.dp, color = MaterialTheme.colorScheme.outlineVariant)
+                        Spacer(modifier = Modifier.height(12.dp))
+                        sm.email?.let { ContactItem(Icons.Default.Email, it) }
+                        sm.facebook?.let { ContactItem(Icons.Default.Facebook, it) }
+                        sm.instagram?.let { ContactItem(Icons.Default.CameraAlt, it) }
+                    }
                 }
             }
         }
@@ -332,9 +344,7 @@ fun InfoCard(title: String, icon: ImageVector, content: @Composable () -> Unit) 
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(16.dp),
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-            // Removed elevation to prevent the shadow from thickening the border's appearance
             elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-            // Changed to a thinner, softer gray (outlineVariant)
             border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
         ) {
             Box(modifier = Modifier.padding(20.dp)) {

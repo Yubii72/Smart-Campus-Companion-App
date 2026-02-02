@@ -4,6 +4,7 @@ import androidx.compose.ui.graphics.Color
 import com.example.smartcampuscompanionapp.R
 import com.example.smartcampuscompanionapp.ui.theme.*
 
+
 data class SocialMedia(
     val email: String? = null,
     val facebook: String? = null,

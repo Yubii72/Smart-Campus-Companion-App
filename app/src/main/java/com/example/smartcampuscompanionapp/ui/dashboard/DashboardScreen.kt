@@ -158,6 +158,7 @@ fun WelcomeSection(
     }
 }
 
+// Composable for an individual navigation card
 @Composable
 fun NavigationCard(
     item: NavigationItem,
@@ -207,6 +208,7 @@ fun NavigationCard(
     }
 }
 
+// Preview for light mode
 @Preview(showBackground = true)
 @Composable
 fun DashboardScreenPreview() {

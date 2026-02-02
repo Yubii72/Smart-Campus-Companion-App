@@ -11,6 +11,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import com.example.smartcampuscompanionapp.ui.dashboard.DashboardScreen
 import com.example.smartcampuscompanionapp.ui.login.LoginScreen
+import com.example.smartcampuscompanionapp.ui.settings.SettingsScreen
 import com.example.smartcampuscompanionapp.ui.theme.SmartCampusCompanionAppTheme
 
 class MainActivity : ComponentActivity() {
@@ -24,14 +25,23 @@ class MainActivity : ComponentActivity() {
                     color = MaterialTheme.colorScheme.background
                 ) {
                     var isLoggedIn by remember { mutableStateOf(false) }
+                    var currentScreen by remember { mutableStateOf("Dashboard") }
 
                     if (isLoggedIn) {
-                        DashboardScreen(
-                            username = "admin",
-                            onNavigationItemClick = { item ->
-                                // Handle navigation item clicks
-                            }
-                        )
+                        when (currentScreen) {
+                            "Dashboard" -> DashboardScreen(
+                                username = "admin",
+                                onNavigationItemClick = { item ->
+                                    if (item == "Settings") {
+                                        currentScreen = "Settings"
+                                    }
+                                }
+                            )
+                            "Settings" -> SettingsScreen(onLogout = {
+                                isLoggedIn = false
+                                currentScreen = "Dashboard"
+                            })
+                        }
                     } else {
                         LoginScreen(onLoginSuccess = {
                             isLoggedIn = true

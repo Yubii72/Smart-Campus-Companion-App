@@ -16,7 +16,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.example.smartcampuscompanionapp.ui.theme.SmartCampusCompanionAppTheme
 
 @Composable
-fun SettingsScreen() {
+fun SettingsScreen(onLogout: () -> Unit = {}) {
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -28,7 +28,7 @@ fun SettingsScreen() {
             verticalArrangement = Arrangement.Center
         ) {
             Text(text = "settings")
-            Button(onClick = { /*TODO*/ }) {
+            Button(onClick = onLogout) {
                 Text(text = "Logout")
             }
         }

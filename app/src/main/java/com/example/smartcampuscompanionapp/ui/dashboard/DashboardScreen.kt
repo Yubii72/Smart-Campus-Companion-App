@@ -34,7 +34,7 @@ fun DashboardScreen(
     username: String = "Student",
     onNavigationItemClick: (String) -> Unit = {}
 ) {
-    // List of dashboard navigation items
+    // List of dashboard navigation items.
     val navigationItems = listOf(
         NavigationItem(
             title = "Campus Information",
@@ -58,7 +58,7 @@ fun DashboardScreen(
         )
     )
 
-    // Scaffold layout providing a top app bar and content area
+    // Scaffold layout providing a top app bar and content area.
     Scaffold(
         topBar = {
             TopAppBar(

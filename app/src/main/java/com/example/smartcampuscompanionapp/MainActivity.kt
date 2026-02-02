@@ -37,10 +37,15 @@ class MainActivity : ComponentActivity() {
                                     }
                                 }
                             )
-                            "Settings" -> SettingsScreen(onLogout = {
-                                isLoggedIn = false
-                                currentScreen = "Dashboard"
-                            })
+                            "Settings" -> SettingsScreen(
+                                onLogout = {
+                                    isLoggedIn = false
+                                    currentScreen = "Dashboard"
+                                },
+                                onBack = {
+                                    currentScreen = "Dashboard"
+                                }
+                            )
                         }
                     } else {
                         LoginScreen(onLoginSuccess = {

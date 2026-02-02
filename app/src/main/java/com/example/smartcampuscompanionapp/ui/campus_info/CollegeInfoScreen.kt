@@ -2,15 +2,12 @@ package com.example.smartcampuscompanionapp.ui.campus_info
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -24,7 +21,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -59,24 +55,12 @@ fun CollegeInfoScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .verticalScroll(rememberScrollState()) // Only one scrollable parent
+                .verticalScroll(rememberScrollState())
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
             HeaderSection(college)
             ContactSection(college)
-
-            if (college.orgChart != null) {
-                OrgChartSection(college.orgChart, college.primaryColor)
-            }
-
-            if (college.undergraduatePrograms.isNotEmpty() || college.graduatePrograms.isNotEmpty()) {
-                ProgramsSection(college.undergraduatePrograms, college.graduatePrograms)
-            }
-
-            if (college.studentOrgs.isNotEmpty()) {
-                StudentOrgsSection(college.studentOrgs)
-            }
         }
     }
 }
@@ -126,240 +110,6 @@ fun ContactItem(icon: ImageVector, text: String) {
 }
 
 @Composable
-fun OrgChartSection(root: OrgMember, primaryColor: Color) {
-    Column(modifier = Modifier.fillMaxWidth()) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Icon(Icons.Default.AccountTree, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
-            Spacer(modifier = Modifier.width(8.dp))
-            Text(text = "Organizational Chart", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-        }
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Column(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            // President
-            OrgMemberNode(root, primaryColor)
-            VerticalLine()
-
-            // EVP
-            val evp = root.subordinates.firstOrNull()
-            if (evp != null) {
-                OrgMemberNode(evp, primaryColor)
-                VerticalLine()
-
-                // VPAA
-                val vpaa = evp.subordinates.firstOrNull()
-                if (vpaa != null) {
-                    OrgMemberNode(vpaa, primaryColor)
-
-                    // Dean Level logic
-                    val dean = vpaa.subordinates.firstOrNull()
-                    if (dean != null) {
-                        VerticalLine()
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.wrapContentWidth()
-                        ) {
-                            OrgMemberNode(dean, primaryColor)
-
-                            if (dean.secretary != null) {
-                                // Horizontal connection to Secretary
-                                Box(modifier = Modifier
-                                    .width(30.dp)
-                                    .height(4.dp)
-                                    .background(Color.LightGray))
-                                OrgMemberNode(dean.secretary, primaryColor)
-                            }
-                        }
-
-                        // Dept Chairs Level
-                        if (dean.subordinates.isNotEmpty()) {
-                            VerticalLine()
-                            // Horizontal branching bar
-                            Box(modifier = Modifier
-                                .fillMaxWidth(0.6f)
-                                .height(4.dp)
-                                .background(Color.LightGray))
-
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceEvenly
-                            ) {
-                                dean.subordinates.forEach { chair ->
-                                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                        VerticalLine()
-                                        OrgMemberNode(chair, primaryColor)
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
-@Composable
-fun VerticalLine() {
-    Box(modifier = Modifier
-        .width(2.dp)
-        .height(24.dp)
-        .background(Color.LightGray))
-}
-
-@Composable
-fun OrgMemberNode(member: OrgMember, backgroundColor: Color) {
-    Card(
-        modifier = Modifier.size(150.dp),
-        colors = CardDefaults.cardColors(containerColor = backgroundColor),
-        shape = RoundedCornerShape(12.dp),
-        elevation = CardDefaults.cardElevation(4.dp)
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(8.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
-            Image(
-                painter = painterResource(id = member.photoRes),
-                contentDescription = member.name,
-                modifier = Modifier
-                    .size(90.dp)
-                    .clip(CircleShape),
-                contentScale = ContentScale.Crop
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = member.name,
-                style = MaterialTheme.typography.labelSmall,
-                fontWeight = FontWeight.Bold,
-                textAlign = TextAlign.Center,
-                color = Color.White,
-                maxLines = 2,
-                lineHeight = 11.sp
-            )
-            Text(
-                text = member.position,
-                style = MaterialTheme.typography.labelSmall,
-                textAlign = TextAlign.Center,
-                color = Color.White.copy(alpha = 0.8f),
-                fontSize = 8.sp,
-                lineHeight = 9.sp
-            )
-        }
-    }
-}
-
-@Composable
-fun ProgramsSection(undergraduate: List<String>, graduate: List<String>) {
-    InfoCard(title = "Programs Offered", icon = Icons.AutoMirrored.Filled.List) {
-        Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-            // College-Offered Programs
-            if (undergraduate.isNotEmpty()) {
-                Text(
-                    text = "College–Offered Programs",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary
-                )
-                undergraduate.forEach { program ->
-                    ProgramItem(program)
-                }
-            }
-            HorizontalDivider(thickness = 1.dp, color = MaterialTheme.colorScheme.outlineVariant)
-            // Graduate Studies-Offered Programs
-            if (graduate.isNotEmpty()) {
-                Text(
-                    text = "Graduate Studies–Offered Programs",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary
-                )
-                graduate.forEach { program ->
-                    ProgramItem(program)
-                }
-            }
-        }
-    }
-}
-
-@Composable
-fun ProgramItem(name: String) {
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        Icon(Icons.Default.CheckCircle, contentDescription = null, modifier = Modifier.size(20.dp), tint = Color(0xFF4CAF50))
-        Spacer(modifier = Modifier.width(12.dp))
-        Text(text = name, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Medium)
-    }
-}
-
-@Composable
-fun StudentOrgsSection(orgs: List<StudentOrg>) {
-    Column(modifier = Modifier.fillMaxWidth()) {
-        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(top = 8.dp)) {
-            Icon(
-                imageVector = Icons.Default.Groups,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(28.dp)
-            )
-            Spacer(modifier = Modifier.width(12.dp))
-            Text(
-                text = "Student Organizations",
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold
-            )
-        }
-        Spacer(modifier = Modifier.height(16.dp))
-        orgs.forEach { org ->
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 16.dp),
-                shape = RoundedCornerShape(16.dp),
-                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)),
-                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
-            ) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Image(
-                            painter = painterResource(id = org.logoRes),
-                            contentDescription = null,
-                            modifier = Modifier
-                                .size(60.dp)
-                                .clip(CircleShape)
-                        )
-                        Spacer(modifier = Modifier.width(16.dp))
-                        Text(text = org.name, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                    }
-                    Spacer(modifier = Modifier.height(12.dp))
-                    Text(
-                        text = org.description,
-                        style = MaterialTheme.typography.bodyMedium,
-                        textAlign = TextAlign.Justify,
-                        lineHeight = 20.sp
-                    )
-
-                    org.socialMedia?.let { sm ->
-                        Spacer(modifier = Modifier.height(16.dp))
-                        HorizontalDivider(thickness = 1.dp, color = MaterialTheme.colorScheme.outlineVariant)
-                        Spacer(modifier = Modifier.height(12.dp))
-                        sm.email?.let { ContactItem(Icons.Default.Email, it) }
-                        sm.facebook?.let { ContactItem(Icons.Default.Facebook, it) }
-                        sm.instagram?.let { ContactItem(Icons.Default.CameraAlt, it) }
-                    }
-                }
-            }
-        }
-    }
-}
-
-@Composable
 fun InfoCard(title: String, icon: ImageVector, content: @Composable () -> Unit) {
     Column(modifier = Modifier.fillMaxWidth()) {
         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -372,9 +122,7 @@ fun InfoCard(title: String, icon: ImageVector, content: @Composable () -> Unit) 
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(16.dp),
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-            // Removed elevation to prevent the shadow from thickening the border's appearance
             elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-            // Changed to a thinner, softer gray (outlineVariant)
             border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
         ) {
             Box(modifier = Modifier.padding(20.dp)) {

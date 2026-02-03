@@ -1,5 +1,6 @@
 package com.example.smartcampuscompanionapp
 
+import android.content.Context
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -16,10 +17,14 @@ import com.example.smartcampuscompanionapp.ui.dashboard.DashboardScreen
 import com.example.smartcampuscompanionapp.ui.login.LoginScreen
 import com.example.smartcampuscompanionapp.ui.settings.SettingsScreen
 import com.example.smartcampuscompanionapp.ui.theme.SmartCampusCompanionAppTheme
+import androidx.core.content.edit
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        
+        val sharedPreferences = getSharedPreferences("smart_campus_prefs", Context.MODE_PRIVATE)
+        
         enableEdgeToEdge()
         setContent {
             SmartCampusCompanionAppTheme {
@@ -27,7 +32,10 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    var isLoggedIn by remember { mutableStateOf(false) }
+                    var isLoggedIn by remember { 
+                        mutableStateOf(sharedPreferences.getBoolean("is_logged_in", false)) 
+                    }
+                    
                     //for dashboard
                     var currentScreen by remember { mutableStateOf("Dashboard") }
                     var selectedCollege by remember { mutableStateOf<College?>(null) }
@@ -45,6 +53,7 @@ class MainActivity : ComponentActivity() {
                             )
                             "Settings" -> SettingsScreen(
                                 onLogout = {
+                                    sharedPreferences.edit { putBoolean("is_logged_in", false) }
                                     isLoggedIn = false
                                     currentScreen = "Dashboard"
                                 },
@@ -70,6 +79,7 @@ class MainActivity : ComponentActivity() {
                         }
                     } else {
                         LoginScreen(onLoginSuccess = {
+                            sharedPreferences.edit { putBoolean("is_logged_in", true) }
                             isLoggedIn = true
                         })
                     }

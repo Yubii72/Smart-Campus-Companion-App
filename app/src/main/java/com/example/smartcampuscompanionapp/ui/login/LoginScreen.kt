@@ -14,12 +14,16 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.delay
 
 @Composable
 fun LoginScreen(onLoginSuccess: () -> Unit) {
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var errorMessage by remember { mutableStateOf<String?>(null) }
+    var successMessage by remember { mutableStateOf<String?>(null) }
+    
+    val scope = rememberCoroutineScope()
 
     Box(
         modifier = Modifier
@@ -59,6 +63,7 @@ fun LoginScreen(onLoginSuccess: () -> Unit) {
                 onValueChange = {
                     username = it
                     errorMessage = null
+                    successMessage = null
                 },
                 label = { Text("Username") },
                 leadingIcon = {
@@ -66,7 +71,9 @@ fun LoginScreen(onLoginSuccess: () -> Unit) {
                 },
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp),
-                singleLine = true
+                singleLine = true,
+                isError = errorMessage?.contains("Username") == true,
+                enabled = successMessage == null
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -76,6 +83,7 @@ fun LoginScreen(onLoginSuccess: () -> Unit) {
                 onValueChange = {
                     password = it
                     errorMessage = null
+                    successMessage = null
                 },
                 label = { Text("Password") },
                 leadingIcon = {
@@ -84,7 +92,9 @@ fun LoginScreen(onLoginSuccess: () -> Unit) {
                 visualTransformation = PasswordVisualTransformation(),
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp),
-                singleLine = true
+                singleLine = true,
+                isError = errorMessage?.contains("Password") == true,
+                enabled = successMessage == null
             )
 
             if (errorMessage != null) {
@@ -95,27 +105,58 @@ fun LoginScreen(onLoginSuccess: () -> Unit) {
                     modifier = Modifier.padding(top = 8.dp)
                 )
             }
+            
+            if (successMessage != null) {
+                Text(
+                    text = successMessage!!,
+                    color = MaterialTheme.colorScheme.primary,
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(top = 8.dp)
+                )
+            }
 
             Spacer(modifier = Modifier.height(32.dp))
 
             Button(
                 onClick = {
-                    if (username == "admin" && password == "admin123") {
+                    val validationError = when {
+                        username.isBlank() -> "Username cannot be empty"
+                        password.isBlank() -> "Password cannot be empty"
+                        username.length < 3 -> "Username is too short"
+                        password.length < 6 -> "Password must be at least 6 characters"
+                        username == "admin" && password == "admin123" -> null
+                        else -> "Invalid username or password"
+                    }
+
+                    if (validationError == null) {
+                        successMessage = "Login successful! Redirecting..."
+                        // Small delay before redirecting to show the success message
+                        // In a real app, this might be where you'd perform a network request
                         onLoginSuccess()
                     } else {
-                        errorMessage = "Invalid username or password"
+                        errorMessage = validationError
                     }
                 },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp),
-                shape = RoundedCornerShape(12.dp)
+                shape = RoundedCornerShape(12.dp),
+                enabled = successMessage == null
             ) {
-                Text(
-                    text = "Login",
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold
-                )
+                if (successMessage != null) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(24.dp),
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        strokeWidth = 2.dp
+                    )
+                } else {
+                    Text(
+                        text = "Login",
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
             }
         }
     }

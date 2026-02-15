@@ -16,6 +16,13 @@ import com.example.smartcampuscompanionapp.ui.theme.SmartCampusCompanionAppTheme
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+<<<<<<< Updated upstream
+=======
+
+        // Shared Preferences
+        val sharedPreferences = getSharedPreferences("smart_campus_prefs", Context.MODE_PRIVATE)
+        
+>>>>>>> Stashed changes
         enableEdgeToEdge()
         setContent {
             SmartCampusCompanionAppTheme {

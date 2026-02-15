@@ -7,6 +7,7 @@ import androidx.room.PrimaryKey
 data class Student(
     @PrimaryKey val studentNumber: String,
     val password: String,
+    val avatar: String? = null,
     
     // Personal Information
     val sexAtBirth: String,

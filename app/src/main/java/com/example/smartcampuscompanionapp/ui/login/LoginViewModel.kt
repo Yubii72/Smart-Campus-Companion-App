@@ -40,48 +40,48 @@ class LoginViewModel(private val repository: StudentRepository) : ViewModel() {
     // Temporary method to seed data if database is empty
     fun seedDataIfEmpty() {
         viewModelScope.launch {
-            if (repository.getStudentCount() == 0) {
-                val demoStudent = Student(
-                    studentNumber = "2024-0001",
-                    password = "password123",
-                    sexAtBirth = "Male",
-                    civilStatus = "Single",
-                    residency = "Local",
-                    nationality = "Filipino",
-                    religion = "Catholic",
-                    dateOfBirth = "2002-01-01",
-                    placeOfBirth = "Manila",
-                    presentAddress = "123 Main St, Quezon City",
-                    permanentAddress = "123 Main St, Quezon City",
-                    primaryMobileNumber = "09123456789",
-                    alternateMobileNumber = "09987654321",
-                    primaryEmailAddress = "student@university.edu.ph",
-                    alternateEmailAddress = "personal@email.com",
-                    fathersName = "Juan Dela Cruz",
-                    fathersOccupation = "Engineer",
-                    fathersDateOfBirth = "1975-05-15",
-                    fathersSexAtBirth = "Male",
-                    mothersName = "Maria Dela Cruz",
-                    mothersOccupation = "Teacher",
-                    mothersDateOfBirth = "1978-08-20",
-                    mothersSexAtBirth = "Female",
-                    numberOfSiblings = 2,
-                    familyAnnualIncome = 500000.0,
-                    guardiansName = "Juan Dela Cruz",
-                    relationToGuardian = "Father",
-                    guardiansContactNumber = "09123456789",
-                    lastSchoolAttended = "City High School",
-                    lastYearAttended = "2023",
-                    learnerReferenceNumber = "123456789012",
-                    honorsReceived = "With Honors",
-                    college = "College of Business Administration and Accountancy",
-                    program = "Bachelor of Science in Accountancy",
-                    curriculum = "2024 Revised",
-                    yearLevel = "1st Year",
-                    section = "A"
-                )
-                repository.insertStudent(demoStudent)
-            }
+            // We'll update the data even if not empty to ensure the new details are used
+            val demoStudent = Student(
+                studentNumber = "2203509",
+                password = "password123",
+                avatar = "irang", // Resource name
+                sexAtBirth = "Male",
+                civilStatus = "Single",
+                residency = "Cabuyeño",
+                nationality = "Filipino",
+                religion = "Roman Catholic",
+                dateOfBirth = "May 5, 2003",
+                placeOfBirth = "Sala, Cabuyao, Laguna",
+                presentAddress = "Block 1 Lot 1 Phase 1 Brgy. Worldwide, City of Cabuyao, Laguna",
+                permanentAddress = "Block 1 Lot 1 Phase 1 Brgy. Worldwide, City of Cabuyao, Laguna",
+                primaryMobileNumber = "09000000000",
+                alternateMobileNumber = "N/A",
+                primaryEmailAddress = "irangfernandojr09@gmail.com",
+                alternateEmailAddress = "N/A",
+                fathersName = "Papa Irang",
+                fathersOccupation = "Tricycle driver",
+                fathersDateOfBirth = "October 19, 1972",
+                fathersSexAtBirth = "Male",
+                mothersName = "Mama Irang",
+                mothersOccupation = "Factory worker",
+                mothersDateOfBirth = "November 18, 1976",
+                mothersSexAtBirth = "Female",
+                numberOfSiblings = 3,
+                familyAnnualIncome = 307190.0,
+                guardiansName = "Fernando Irang",
+                relationToGuardian = "Father",
+                guardiansContactNumber = "09065387621",
+                lastSchoolAttended = "Worldwide Integrated High School",
+                lastYearAttended = "2022",
+                learnerReferenceNumber = "1192498",
+                honorsReceived = "Most Sleepless of 2022\nWith Highest Honors, 96",
+                college = "College of Computing Studies",
+                program = "Bachelor of Science in Information Technology",
+                curriculum = "BSIT 2018",
+                yearLevel = "Third Year",
+                section = "IT-C"
+            )
+            repository.insertStudent(demoStudent)
         }
     }
 }

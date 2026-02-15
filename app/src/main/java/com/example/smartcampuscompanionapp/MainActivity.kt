@@ -35,7 +35,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         
-        // Seed initial data
+        // Seed initial data with updated student details
         loginViewModel.seedDataIfEmpty()
         
         val sharedPreferences = getSharedPreferences("smart_campus_prefs", Context.MODE_PRIVATE)
@@ -57,7 +57,7 @@ class MainActivity : ComponentActivity() {
                     if (isLoggedIn) {
                         when (currentScreen) {
                             "Dashboard" -> DashboardScreen(
-                                username = "2024-0001", // Using the student number from seeded data
+                                username = "2203509", // Updated to the new student number
                                 onNavigationItemClick = { item ->
                                     when (item) {
                                         "Settings" -> currentScreen = "Settings"

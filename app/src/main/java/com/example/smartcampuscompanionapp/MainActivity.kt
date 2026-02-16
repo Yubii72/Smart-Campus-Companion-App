@@ -14,6 +14,7 @@ import com.example.smartcampuscompanionapp.ui.campus_info.CollegeInfoScreen
 import com.example.smartcampuscompanionapp.ui.campus_info.CollegeListScreen
 import com.example.smartcampuscompanionapp.ui.dashboard.DashboardScreen
 import com.example.smartcampuscompanionapp.ui.login.LoginScreen
+import com.example.smartcampuscompanionapp.ui.schedule.ScheduleScreen
 import com.example.smartcampuscompanionapp.ui.settings.SettingsScreen
 import com.example.smartcampuscompanionapp.ui.theme.SmartCampusCompanionAppTheme
 

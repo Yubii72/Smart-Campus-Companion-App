@@ -9,6 +9,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import com.example.smartcampuscompanionapp.ui.campus_info.College
+import com.example.smartcampuscompanionapp.ui.campus_info.CollegeInfoScreen
+import com.example.smartcampuscompanionapp.ui.campus_info.CollegeListScreen
 import com.example.smartcampuscompanionapp.ui.dashboard.DashboardScreen
 import com.example.smartcampuscompanionapp.ui.login.LoginScreen
 import com.example.smartcampuscompanionapp.ui.schedule.ScheduleScreen
@@ -26,14 +29,19 @@ class MainActivity : ComponentActivity() {
                     color = MaterialTheme.colorScheme.background
                 ) {
                     var isLoggedIn by remember { mutableStateOf(false) }
+                    //for dashboard
                     var currentScreen by remember { mutableStateOf("Dashboard") }
+                    var selectedCollege by remember { mutableStateOf<College?>(null) }
 
                     if (isLoggedIn) {
                         when (currentScreen) {
                             "Dashboard" -> DashboardScreen(
                                 username = "admin",
                                 onNavigationItemClick = { item ->
-                                    currentScreen = item
+                                    when (item) {
+                                        "Settings" -> currentScreen = "Settings"
+                                        "Campus Information" -> currentScreen = "CollegeList"
+                                    }
                                 }
                             )
                             "Settings" -> SettingsScreen(
@@ -45,9 +53,19 @@ class MainActivity : ComponentActivity() {
                                     currentScreen = "Dashboard"
                                 }
                             )
-                            "Schedule" -> ScheduleScreen(
-                                onBack = {
+                            "CollegeList" -> CollegeListScreen(
+                                onCollegeClick = { college ->
+                                    selectedCollege = college
+                                    currentScreen = "CollegeInfo"
+                                },
+                                onBackClick = {
                                     currentScreen = "Dashboard"
+                                }
+                            )
+                            "CollegeInfo" -> CollegeInfoScreen(
+                                college = selectedCollege!!,
+                                onBackClick = {
+                                    currentScreen = "CollegeList"
                                 }
                             )
                         }

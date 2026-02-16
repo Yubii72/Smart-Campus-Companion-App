@@ -41,9 +41,11 @@ class MainActivity : ComponentActivity() {
                                     when (item) {
                                         "Settings" -> currentScreen = "Settings"
                                         "Campus Information" -> currentScreen = "CollegeList"
+                                        "Schedule" -> currentScreen = "Schedule"
                                     }
                                 }
                             )
+                            "Schedule" -> ScheduleScreen(onBack = { currentScreen = "Dashboard" })
                             "Settings" -> SettingsScreen(
                                 onLogout = {
                                     isLoggedIn = false

@@ -59,9 +59,9 @@ fun ScheduleScreen(onBack: () -> Unit = {}) {
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+                .padding(paddingValues),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+            contentPadding = PaddingValues(16.dp)
         ) {
             items(tasks) { task ->
                 TaskItem(task = task, onEdit = {}, onDelete = {})

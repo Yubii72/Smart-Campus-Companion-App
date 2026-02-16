@@ -11,6 +11,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import com.example.smartcampuscompanionapp.ui.dashboard.DashboardScreen
 import com.example.smartcampuscompanionapp.ui.login.LoginScreen
+import com.example.smartcampuscompanionapp.ui.schedule.ScheduleScreen
 import com.example.smartcampuscompanionapp.ui.settings.SettingsScreen
 import com.example.smartcampuscompanionapp.ui.theme.SmartCampusCompanionAppTheme
 
@@ -32,9 +33,7 @@ class MainActivity : ComponentActivity() {
                             "Dashboard" -> DashboardScreen(
                                 username = "admin",
                                 onNavigationItemClick = { item ->
-                                    if (item == "Settings") {
-                                        currentScreen = "Settings"
-                                    }
+                                    currentScreen = item
                                 }
                             )
                             "Settings" -> SettingsScreen(
@@ -42,6 +41,11 @@ class MainActivity : ComponentActivity() {
                                     isLoggedIn = false
                                     currentScreen = "Dashboard"
                                 },
+                                onBack = {
+                                    currentScreen = "Dashboard"
+                                }
+                            )
+                            "Schedule" -> ScheduleScreen(
                                 onBack = {
                                     currentScreen = "Dashboard"
                                 }

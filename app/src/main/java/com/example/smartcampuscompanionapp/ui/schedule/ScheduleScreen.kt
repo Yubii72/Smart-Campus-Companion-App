@@ -58,21 +58,18 @@ fun ScheduleScreen(onBack: () -> Unit = {}) {
             }
         }
     ) { paddingValues ->
-        Column(
+        LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
-                .padding(16.dp),
+                .padding(paddingValues),
+            contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            DateTimePicker()
-            LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                items(tasks) { task ->
-                    TaskItem(task = task, onEdit = {}, onDelete = {})
-                }
+            item {
+                DateTimePicker()
+            }
+            items(tasks) { task ->
+                TaskItem(task = task, onEdit = {}, onDelete = {})
             }
         }
     }

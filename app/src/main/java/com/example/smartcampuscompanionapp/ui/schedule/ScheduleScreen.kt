@@ -1,5 +1,6 @@
 package com.example.smartcampuscompanionapp.ui.schedule
 
+// Import for Time Picker dialog
 import android.app.TimePickerDialog
 import android.widget.DatePicker
 import androidx.compose.foundation.clickable
@@ -20,17 +21,19 @@ import com.example.smartcampuscompanionapp.ui.theme.SmartCampusCompanionAppTheme
 import java.text.SimpleDateFormat
 import java.util.*
 
+// Data class representing a task
 data class Task(
-    val id: String = UUID.randomUUID().toString(),
-    val title: String,
-    val dueDate: String,
-    val description: String
+    val id: String = UUID.randomUUID().toString(), // Unique ID for each task
+    val title: String, // Task title
+    val dueDate: String, // Task due date
+    val description: String // Task description
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ScheduleScreen(onBack: () -> Unit) {
 
+    // List of tasks stored in memory
     val tasks = remember {
         mutableStateListOf(
             Task(title = "Complete Project Proposal", dueDate = "2024-08-15", description = "Finish the proposal."),
@@ -39,30 +42,40 @@ fun ScheduleScreen(onBack: () -> Unit) {
         )
     }
 
+    // Dialog visibility state
     var showDialog by remember { mutableStateOf(false) }
+    // Currently editing task
     var editingTask by remember { mutableStateOf<Task?>(null) }
+    // Sorting order state
     var sortOrder by remember { mutableStateOf(SortOrder.NONE) }
+    // Selected date from picker
     var selectedDate by remember { mutableStateOf("") }
+    // Selected time from picker
     var selectedTime by remember { mutableStateOf("") }
 
+    // Search query text
     var searchQuery by remember { mutableStateOf("") }
+    // Checkbox for filtering today's tasks
     var filterToday by remember { mutableStateOf(false) }
 
+    // Scaffold layout containing top bar, FAB, and content
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Task & Schedule Manager") },
+                title = { Text("Task & Schedule Manager") }, // App title
                 navigationIcon = {
-                    IconButton(onClick = onBack) {
+                    IconButton(onClick = onBack) { // Back button
                         Icon(Icons.Default.ArrowBack, contentDescription = "Back")
                     }
                 },
                 actions = {
+                    // Sorting dropdown menu
                     SortDropDown(sortOrder = sortOrder, onSortOrderChange = { sortOrder = it })
                 }
             )
         },
         floatingActionButton = {
+            // Floating button to add new task
             FloatingActionButton(onClick = {
                 editingTask = null
                 showDialog = true
@@ -72,14 +85,18 @@ fun ScheduleScreen(onBack: () -> Unit) {
         }
     ) { paddingValues ->
 
+        // Get today's date for filtering
         val todayDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
 
+        // Filter tasks based on search query
         val filteredTasks = tasks.filter {
             it.title.contains(searchQuery, true) || it.description.contains(searchQuery, true)
         }.filter {
+            // Filter only today's tasks if checkbox enabled
             if (!filterToday) true else it.dueDate.startsWith(todayDate)
         }
 
+        // Sort tasks depending on selected order
         val sortedTasks = when (sortOrder) {
             SortOrder.ASCENDING -> filteredTasks.sortedBy { it.dueDate }
             SortOrder.DESCENDING -> filteredTasks.sortedByDescending { it.dueDate }
@@ -92,6 +109,7 @@ fun ScheduleScreen(onBack: () -> Unit) {
                 .padding(paddingValues)
         ) {
 
+            // Search and filter UI section
             Column(modifier = Modifier.padding(16.dp)) {
                 OutlinedTextField(
                     value = searchQuery,
@@ -110,12 +128,14 @@ fun ScheduleScreen(onBack: () -> Unit) {
                 }
             }
 
+            // List of tasks
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
                 contentPadding = PaddingValues(16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
 
+                // Date and Time picker component
                 item {
                     DateTimePicker(selectedDate, selectedTime) { date, time ->
                         selectedDate = date
@@ -123,6 +143,7 @@ fun ScheduleScreen(onBack: () -> Unit) {
                     }
                 }
 
+                // Display message if no tasks found
                 if (sortedTasks.isEmpty()) {
                     item {
                         Text(
@@ -132,6 +153,7 @@ fun ScheduleScreen(onBack: () -> Unit) {
                     }
                 }
 
+                // Display each task
                 items(sortedTasks) { task ->
                     TaskItem(
                         task = task,
@@ -146,6 +168,7 @@ fun ScheduleScreen(onBack: () -> Unit) {
         }
     }
 
+    // Dialog for adding/editing task
     if (showDialog) {
         TaskDialog(
             task = editingTask,
@@ -167,6 +190,7 @@ fun ScheduleScreen(onBack: () -> Unit) {
     }
 }
 
+// Enum class for sorting options
 enum class SortOrder {
     ASCENDING, DESCENDING, NONE
 }
@@ -175,6 +199,7 @@ enum class SortOrder {
 fun SortDropDown(sortOrder: SortOrder, onSortOrderChange: (SortOrder) -> Unit) {
     var expanded by remember { mutableStateOf(false) }
 
+    // Dropdown menu container
     Box {
         IconButton(onClick = { expanded = true }) {
             Icon(Icons.Default.Sort, contentDescription = "Sort Tasks")
@@ -202,12 +227,16 @@ fun TaskDialog(
     initialDate: String,
     initialTime: String
 ) {
+    // Title input state
     var title by remember { mutableStateOf(task?.title ?: "") }
+    // Due date state
     var dueDate by remember(task, initialDate, initialTime) {
         mutableStateOf(task?.dueDate ?: "$initialDate $initialTime".trim())
     }
+    // Description input state
     var description by remember { mutableStateOf(task?.description ?: "") }
 
+    // Dialog UI
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(if (task == null) "Add Task" else "Edit Task") },
@@ -242,6 +271,7 @@ fun DateTimePicker(
     val context = LocalContext.current
     val calendar = Calendar.getInstance()
 
+    // Date picker dialog
     val datePickerDialog = android.app.DatePickerDialog(
         context,
         { _: DatePicker, year: Int, month: Int, dayOfMonth: Int ->
@@ -254,6 +284,7 @@ fun DateTimePicker(
         calendar.get(Calendar.DAY_OF_MONTH)
     )
 
+    // Time picker dialog
     val timePickerDialog = TimePickerDialog(
         context,
         { _, hourOfDay: Int, minute: Int ->
@@ -267,12 +298,14 @@ fun DateTimePicker(
         true
     )
 
+    // Row containing date and time fields
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
 
+        // Date field
         Box(
             modifier = Modifier.weight(1f).clickable { datePickerDialog.show() }
         ) {
@@ -288,6 +321,7 @@ fun DateTimePicker(
             )
         }
 
+        // Time field
         Box(
             modifier = Modifier.weight(1f).clickable { timePickerDialog.show() }
         ) {
@@ -307,6 +341,7 @@ fun DateTimePicker(
 
 @Composable
 fun TaskItem(task: Task, onEdit: () -> Unit, onDelete: () -> Unit) {
+    // Card layout for each task
     Card(modifier = Modifier.fillMaxWidth()) {
         Row(
             modifier = Modifier.fillMaxWidth().padding(16.dp),

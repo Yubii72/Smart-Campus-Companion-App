@@ -21,6 +21,7 @@ import com.example.smartcampuscompanionapp.ui.dashboard.DashboardScreen
 import com.example.smartcampuscompanionapp.ui.login.LoginScreen
 import com.example.smartcampuscompanionapp.ui.login.LoginViewModel
 import com.example.smartcampuscompanionapp.ui.login.LoginViewModelFactory
+import com.example.smartcampuscompanionapp.ui.schedule.ScheduleScreen
 import com.example.smartcampuscompanionapp.ui.settings.SettingsScreen
 import com.example.smartcampuscompanionapp.ui.theme.SmartCampusCompanionAppTheme
 
@@ -62,9 +63,11 @@ class MainActivity : ComponentActivity() {
                                     when (item) {
                                         "Settings" -> currentScreen = "Settings"
                                         "Campus Information" -> currentScreen = "CollegeList"
+                                        "Schedule" -> currentScreen = "Schedule"
                                     }
                                 }
                             )
+                            "Schedule" -> ScheduleScreen(onBack = { currentScreen = "Dashboard" })
                             "Settings" -> SettingsScreen(
                                 onLogout = {
                                     sharedPreferences.edit { putBoolean("is_logged_in", false) }

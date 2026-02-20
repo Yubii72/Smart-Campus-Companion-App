@@ -14,6 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.core.content.edit
 import com.example.smartcampuscompanionapp.data.local.AppDatabase
 import com.example.smartcampuscompanionapp.data.repository.StudentRepository
+import com.example.smartcampuscompanionapp.ui.announcement.AnnouncementScreen
 import com.example.smartcampuscompanionapp.ui.campus_info.College
 import com.example.smartcampuscompanionapp.ui.campus_info.CollegeInfoScreen
 import com.example.smartcampuscompanionapp.ui.campus_info.CollegeListScreen
@@ -26,7 +27,7 @@ import com.example.smartcampuscompanionapp.ui.settings.SettingsScreen
 import com.example.smartcampuscompanionapp.ui.theme.SmartCampusCompanionAppTheme
 
 class MainActivity : ComponentActivity() {
-    
+
     private val database by lazy { AppDatabase.getDatabase(this) }
     private val repository by lazy { StudentRepository(database.studentDao()) }
     private val loginViewModel: LoginViewModel by viewModels {
@@ -35,12 +36,12 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        
+
         // Seed initial data
         loginViewModel.seedDataIfEmpty()
-        
+
         val sharedPreferences = getSharedPreferences("smart_campus_prefs", Context.MODE_PRIVATE)
-        
+
         enableEdgeToEdge()
         setContent {
             SmartCampusCompanionAppTheme {
@@ -48,10 +49,10 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    var isLoggedIn by remember { 
-                        mutableStateOf(sharedPreferences.getBoolean("is_logged_in", false)) 
+                    var isLoggedIn by remember {
+                        mutableStateOf(sharedPreferences.getBoolean("is_logged_in", false))
                     }
-                    
+
                     var currentScreen by remember { mutableStateOf("Dashboard") }
                     var selectedCollege by remember { mutableStateOf<College?>(null) }
 
@@ -64,9 +65,11 @@ class MainActivity : ComponentActivity() {
                                         "Settings" -> currentScreen = "Settings"
                                         "Campus Information" -> currentScreen = "CollegeList"
                                         "Schedule" -> currentScreen = "Schedule"
+                                        "Announcements" -> currentScreen = "Announcements"
                                     }
                                 }
                             )
+                            "Announcements" -> AnnouncementScreen(onBack = { currentScreen = "Dashboard" })
                             "Schedule" -> ScheduleScreen(onBack = { currentScreen = "Dashboard" })
                             "Settings" -> SettingsScreen(
                                 onLogout = {

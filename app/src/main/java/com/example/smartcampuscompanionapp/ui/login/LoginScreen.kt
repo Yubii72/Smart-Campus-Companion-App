@@ -14,16 +14,23 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import kotlinx.coroutines.delay
 
 @Composable
-fun LoginScreen(onLoginSuccess: () -> Unit) {
-    var username by remember { mutableStateOf("") }
+fun LoginScreen(
+    viewModel: LoginViewModel,
+    onLoginSuccess: () -> Unit
+) {
+    var studentNumber by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-    var errorMessage by remember { mutableStateOf<String?>(null) }
-    var successMessage by remember { mutableStateOf<String?>(null) }
     
-    val scope = rememberCoroutineScope()
+    val uiState by viewModel.uiState.collectAsState()
+
+    LaunchedEffect(uiState) {
+        if (uiState is LoginUiState.Success) {
+            onLoginSuccess()
+            viewModel.resetState()
+        }
+    }
 
     Box(
         modifier = Modifier
@@ -59,21 +66,21 @@ fun LoginScreen(onLoginSuccess: () -> Unit) {
             Spacer(modifier = Modifier.height(48.dp))
 
             OutlinedTextField(
-                value = username,
+                value = studentNumber,
                 onValueChange = {
-                    username = it
-                    errorMessage = null
-                    successMessage = null
+                    studentNumber = it
+                    if (uiState is LoginUiState.Error) viewModel.resetState()
                 },
-                label = { Text("Username") },
+                label = { Text("Student Number") },
+                placeholder = { Text("e.g. 2024-0001") },
                 leadingIcon = {
                     Icon(imageVector = Icons.Default.Person, contentDescription = null)
                 },
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp),
                 singleLine = true,
-                isError = errorMessage?.contains("Username") == true,
-                enabled = successMessage == null
+                isError = uiState is LoginUiState.Error,
+                enabled = uiState !is LoginUiState.Loading
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -82,8 +89,7 @@ fun LoginScreen(onLoginSuccess: () -> Unit) {
                 value = password,
                 onValueChange = {
                     password = it
-                    errorMessage = null
-                    successMessage = null
+                    if (uiState is LoginUiState.Error) viewModel.resetState()
                 },
                 label = { Text("Password") },
                 leadingIcon = {
@@ -93,58 +99,32 @@ fun LoginScreen(onLoginSuccess: () -> Unit) {
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp),
                 singleLine = true,
-                isError = errorMessage?.contains("Password") == true,
-                enabled = successMessage == null
+                isError = uiState is LoginUiState.Error,
+                enabled = uiState !is LoginUiState.Loading
             )
 
-            if (errorMessage != null) {
+            if (uiState is LoginUiState.Error) {
                 Text(
-                    text = errorMessage!!,
+                    text = (uiState as LoginUiState.Error).message,
                     color = MaterialTheme.colorScheme.error,
                     style = MaterialTheme.typography.bodySmall,
                     modifier = Modifier.padding(top = 8.dp)
                 )
             }
             
-            if (successMessage != null) {
-                Text(
-                    text = successMessage!!,
-                    color = MaterialTheme.colorScheme.primary,
-                    style = MaterialTheme.typography.bodyMedium,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(top = 8.dp)
-                )
-            }
-
             Spacer(modifier = Modifier.height(32.dp))
 
             Button(
                 onClick = {
-                    val validationError = when {
-                        username.isBlank() -> "Username cannot be empty"
-                        password.isBlank() -> "Password cannot be empty"
-                        username.length < 3 -> "Username is too short"
-                        password.length < 6 -> "Password must be at least 6 characters"
-                        username == "admin" && password == "admin123" -> null
-                        else -> "Invalid username or password"
-                    }
-
-                    if (validationError == null) {
-                        successMessage = "Login successful! Redirecting..."
-                        // Small delay before redirecting to show the success message
-                        // In a real app, this might be where you'd perform a network request
-                        onLoginSuccess()
-                    } else {
-                        errorMessage = validationError
-                    }
+                    viewModel.login(studentNumber, password)
                 },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp),
                 shape = RoundedCornerShape(12.dp),
-                enabled = successMessage == null
+                enabled = uiState !is LoginUiState.Loading
             ) {
-                if (successMessage != null) {
+                if (uiState is LoginUiState.Loading) {
                     CircularProgressIndicator(
                         modifier = Modifier.size(24.dp),
                         color = MaterialTheme.colorScheme.onPrimary,
@@ -157,6 +137,14 @@ fun LoginScreen(onLoginSuccess: () -> Unit) {
                         fontWeight = FontWeight.Bold
                     )
                 }
+            }
+            
+            if (uiState is LoginUiState.Loading) {
+                Text(
+                    text = "Verifying account...",
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier.padding(top = 16.dp)
+                )
             }
         }
     }

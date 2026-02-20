@@ -9,6 +9,8 @@ data class Student(
     val password: String,
     
     // Personal Information
+    val firstName: String,
+    val lastName: String,
     val sexAtBirth: String,
     val civilStatus: String,
     val residency: String,

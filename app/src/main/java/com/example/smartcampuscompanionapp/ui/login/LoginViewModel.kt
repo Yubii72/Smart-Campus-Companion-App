@@ -44,6 +44,8 @@ class LoginViewModel(private val repository: StudentRepository) : ViewModel() {
                 val demoStudent = Student(
                     studentNumber = "2024-0001",
                     password = "password123",
+                    firstName = "Irang",
+                    lastName = "Dela Cruz",
                     sexAtBirth = "Male",
                     civilStatus = "Single",
                     residency = "Local",

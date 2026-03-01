@@ -44,6 +44,8 @@ class LoginViewModel(private val repository: StudentRepository) : ViewModel() {
                 val demoStudent = Student(
                     studentNumber = "2024-0001",
                     password = "password123",
+                    firstName = "Mark",
+                    lastName = "Dela Cruz",
                     sexAtBirth = "Male",
                     civilStatus = "Single",
                     residency = "Local",
@@ -94,7 +96,7 @@ sealed class LoginUiState {
 }
 
 class LoginViewModelFactory(private val repository: StudentRepository) : ViewModelProvider.Factory {
-    override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T {
+    override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(LoginViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
             return LoginViewModel(repository) as T

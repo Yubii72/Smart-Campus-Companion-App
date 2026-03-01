@@ -6,6 +6,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -24,7 +25,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.smartcampuscompanionapp.R
 import com.example.smartcampuscompanionapp.data.local.AppDatabase
 import com.example.smartcampuscompanionapp.data.repository.StudentRepository
@@ -35,12 +35,14 @@ import androidx.compose.ui.platform.LocalContext
 @Composable
 fun ProfileScreen(
     studentNumber: String,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    viewModel: ProfileViewModel,
+    showBackButton: Boolean = true,
+    onSettingsClick: (() -> Unit)? = null
 ) {
     val context = LocalContext.current
     val database = AppDatabase.getDatabase(context)
     val repository = StudentRepository(database.studentDao())
-    val viewModel: ProfileViewModel = viewModel(factory = ProfileViewModelFactory(repository))
 
     // Load profile data when screen opens
     LaunchedEffect(studentNumber) {
@@ -58,13 +60,30 @@ fun ProfileScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Profile") },
+                title = {
+                    Text(
+                        "Profile",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold
+                    )
+                },
                 navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                    if (showBackButton) {
+                        IconButton(onClick = onBack) {
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        }
                     }
                 },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                ),
                 actions = {
+                    if (onSettingsClick != null) {
+                        IconButton(onClick = onSettingsClick) {
+                            Icon(Icons.Default.Settings, contentDescription = "Settings")
+                        }
+                    }
                     if (!viewModel.isEditMode) {
                         Button(
                             onClick = { viewModel.isEditMode = true },
@@ -123,6 +142,8 @@ fun ProfileScreen(
             if (!viewModel.isEditMode) {
                 // OVERVIEW MODE
                 OverviewSection(
+                    firstName = viewModel.firstName,
+                    lastName = viewModel.lastName,
                     studentNumber = viewModel.studentNumber,
                     sexAtBirth = viewModel.sexAtBirth,
                     civilStatus = viewModel.civilStatus,
@@ -183,8 +204,34 @@ fun ProfileScreen(
 }
 
 @Composable
+fun OverviewDetailCard(
+    title: String,
+    content: @Composable () -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 6.dp),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.labelLarge,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.padding(bottom = 12.dp)
+            )
+            content()
+        }
+    }
+}
+
+@Composable
 fun OverviewSection(
-    studentNumber: String, sexAtBirth: String, civilStatus: String, residency: String,
+    firstName: String, lastName: String, studentNumber: String, sexAtBirth: String, civilStatus: String, residency: String,
     nationality: String, religion: String, dateOfBirth: String, placeOfBirth: String,
     presentProvince: String, presentZIP: String, presentCity: String, presentBarangay: String, presentHouse: String,
     permanentProvince: String, permanentZIP: String, permanentCity: String, permanentBarangay: String, permanentHouse: String,
@@ -200,24 +247,32 @@ fun OverviewSection(
     college: String, program: String, curriculum: String, yearLevel: String, section: String
 ) {
     Column(modifier = Modifier.fillMaxWidth()) {
-        OverviewDetail("Student Number", studentNumber)
-        OverviewDetail("Sex at Birth", sexAtBirth)
-        OverviewDetail("Civil Status", civilStatus)
-        OverviewDetail("Residency", residency)
-        OverviewDetail("Nationality", nationality)
-        OverviewDetail("Religion", religion)
-        OverviewDetail("Date of Birth", dateOfBirth)
-        OverviewDetail("Place of Birth", placeOfBirth)
+        ProfileSectionHeader("Personal Information", Icons.Default.Person)
+        OverviewDetailCard("Basic Info") {
+            OverviewDetail("First Name", firstName)
+            OverviewDetail("Last Name", lastName)
+            OverviewDetail("Student Number", studentNumber)
+            OverviewDetail("Sex at Birth", sexAtBirth)
+            OverviewDetail("Civil Status", civilStatus)
+            OverviewDetail("Residency", residency)
+            OverviewDetail("Nationality", nationality)
+            OverviewDetail("Religion", religion)
+            OverviewDetail("Date of Birth", dateOfBirth)
+            OverviewDetail("Place of Birth", placeOfBirth)
+        }
 
-        ProfileSectionHeader("Contact Information", null)
+        ProfileSectionHeader("Contact Information", Icons.Default.ContactPhone)
+        OverviewDetailCard("Addresses & Contact") {
         OverviewDetail("Present Address", "$presentHouse $presentBarangay, $presentCity, $presentProvince")
         OverviewDetail("Permanent Address", "$permanentHouse $permanentBarangay, $permanentCity, $permanentProvince")
         OverviewDetail("Primary Mobile Number", primaryMobileNumber)
         OverviewDetail("Alternate Mobile Number", alternateMobileNumber)
         OverviewDetail("Primary Email Address", primaryEmailAddress)
         OverviewDetail("Alternate Email Address", alternateEmailAddress)
+        }
 
-        ProfileSectionHeader("Family Background", null)
+        ProfileSectionHeader("Family Background", Icons.Default.Groups)
+        OverviewDetailCard("Family") {
         OverviewDetail("Father's Name", "$fatherFirstName $fatherMiddleName $fatherLastName")
         OverviewDetail("Father's Occupation", fatherOccupation)
         OverviewDetail("Father's Date of Birth", fatherDateOfBirth)
@@ -231,19 +286,24 @@ fun OverviewSection(
         OverviewDetail("Guardian's Name", "$guardianFirstName $guardianMiddleName $guardianLastName")
         OverviewDetail("Relation to Guardian", relationToGuardian)
         OverviewDetail("Guardian's Contact Number", guardianContactNumber)
+        }
 
-        ProfileSectionHeader("Educational Background", null)
+        ProfileSectionHeader("Educational Background", Icons.Default.School)
+        OverviewDetailCard("Education") {
         OverviewDetail("Last School Attended", lastSchoolAttended)
         OverviewDetail("Last Year Attended", lastYearAttended)
         OverviewDetail("Learner Reference Number", learnerReferenceNumber)
         OverviewDetail("Honor/s Received", honorsReceived)
+        }
 
-        ProfileSectionHeader("Enrollment Details", null)
+        ProfileSectionHeader("Enrollment Details", Icons.Default.School)
+        OverviewDetailCard("Enrollment") {
         OverviewDetail("College", college)
         OverviewDetail("Program", program)
         OverviewDetail("Curriculum", curriculum)
         OverviewDetail("Year Level", yearLevel)
         OverviewDetail("Section", section)
+        }
     }
 }
 
@@ -354,8 +414,11 @@ fun ProfileSectionHeader(title: String, icon: ImageVector?) {
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 12.dp)
-            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
-            .padding(8.dp)
+            .background(
+                MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                RoundedCornerShape(12.dp)
+            )
+            .padding(12.dp)
     ) {
         if (icon != null) {
             Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
@@ -403,6 +466,7 @@ fun EditField(
         value = value,
         onValueChange = { if (isEditable) onValueChange(it) },
         label = { Text(label) },
+        shape = RoundedCornerShape(12.dp),
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 4.dp),

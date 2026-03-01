@@ -59,7 +59,7 @@ fun CollegeInfoScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .verticalScroll(rememberScrollState()) // Only one scrollable parent
+                .verticalScroll(rememberScrollState()) // only one scrollable parent
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {

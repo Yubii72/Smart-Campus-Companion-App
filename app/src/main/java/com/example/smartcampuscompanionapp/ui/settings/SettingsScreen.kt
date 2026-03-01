@@ -56,8 +56,18 @@ fun SettingsScreen(onLogout: () -> Unit = {}, onBack: () -> Unit = {}) {
     if (showLogoutDialog) {
         AlertDialog(
             onDismissRequest = { showLogoutDialog = false },
-            title = { Text(text = "Logout Confirmation") },
-            text = { Text(text = "Are you sure you want to log out?") },
+            title = {
+                Text(
+                    text = "Logout Confirmation",
+                    style = MaterialTheme.typography.titleLarge
+                )
+            },
+            text = {
+                Text(
+                    text = "Are you sure you want to log out?",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            },
             confirmButton = {
                 TextButton(
                     onClick = {
@@ -75,11 +85,16 @@ fun SettingsScreen(onLogout: () -> Unit = {}, onBack: () -> Unit = {}) {
             }
         )
     }
-
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Settings") },
+                title = {
+                    Text(
+                        "Settings",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold
+                    )
+                },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
@@ -157,8 +172,9 @@ fun SettingsScreen(onLogout: () -> Unit = {}, onBack: () -> Unit = {}) {
 fun SettingsCard(content: @Composable ColumnScope.() -> Unit) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
         content = content
     )
 }

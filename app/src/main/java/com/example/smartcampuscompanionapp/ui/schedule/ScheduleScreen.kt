@@ -1,12 +1,15 @@
 package com.example.smartcampuscompanionapp.ui.schedule
 
 // Import for Time Picker dialog
-import android.app.TimePickerDialog
+import android.app.DatePickerDialog
 import android.widget.DatePicker
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -15,6 +18,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.smartcampuscompanionapp.ui.theme.SmartCampusCompanionAppTheme
@@ -31,27 +35,20 @@ data class Task(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ScheduleScreen(onBack: () -> Unit) {
-
-    // List of tasks stored in memory
-    val tasks = remember {
-        mutableStateListOf(
-            Task(title = "Complete Project Proposal", dueDate = "2024-08-15", description = "Finish the proposal."),
-            Task(title = "Study for Midterms", dueDate = "2024-08-20", description = "Cover chapters 4-6."),
-            Task(title = "Team Meeting", dueDate = "2024-08-12", description = "Discuss project progress.")
-        )
-    }
+fun ScheduleScreen(
+    tasks: MutableList<Task>,
+    onBack: () -> Unit = {},
+    showBackButton: Boolean = true
+) {
 
     // Dialog visibility state
     var showDialog by remember { mutableStateOf(false) }
+    var showDeleteConfirmDialog by remember { mutableStateOf(false) }
+    var taskToDelete by remember { mutableStateOf<Task?>(null) }
     // Currently editing task
     var editingTask by remember { mutableStateOf<Task?>(null) }
     // Sorting order state
     var sortOrder by remember { mutableStateOf(SortOrder.NONE) }
-    // Selected date from picker
-    var selectedDate by remember { mutableStateOf("") }
-    // Selected time from picker
-    var selectedTime by remember { mutableStateOf("") }
 
     // Search query text
     var searchQuery by remember { mutableStateOf("") }
@@ -62,24 +59,38 @@ fun ScheduleScreen(onBack: () -> Unit) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Task & Schedule Manager") }, // App title
+                title = {
+                    Text(
+                        "Task & Schedule Manager",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold
+                    )
+                },
                 navigationIcon = {
-                    IconButton(onClick = onBack) { // Back button
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                    if (showBackButton) {
+                        IconButton(onClick = onBack) {
+                            Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                        }
                     }
                 },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                    navigationIconContentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                ),
                 actions = {
-                    // Sorting dropdown menu
                     SortDropDown(sortOrder = sortOrder, onSortOrderChange = { sortOrder = it })
                 }
             )
         },
         floatingActionButton = {
-            // Floating button to add new task
-            FloatingActionButton(onClick = {
-                editingTask = null
-                showDialog = true
-            }) {
+            FloatingActionButton(
+                onClick = {
+                    editingTask = null
+                    showDialog = true
+                },
+                containerColor = MaterialTheme.colorScheme.primary
+            ) {
                 Icon(Icons.Default.Add, contentDescription = "Add Task")
             }
         }
@@ -110,46 +121,92 @@ fun ScheduleScreen(onBack: () -> Unit) {
         ) {
 
             // Search and filter UI section
-            Column(modifier = Modifier.padding(16.dp)) {
+            Column(modifier = Modifier.padding(20.dp)) {
                 OutlinedTextField(
                     value = searchQuery,
                     onValueChange = { searchQuery = it },
                     modifier = Modifier.fillMaxWidth(),
                     label = { Text("Search tasks") },
-                    leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Search") }
+                    leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Search") },
+                    shape = RoundedCornerShape(16.dp)
                 )
 
-                Row(verticalAlignment = Alignment.CenterVertically) {
+                Spacer(modifier = Modifier.height(12.dp))
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(
+                            MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                            RoundedCornerShape(12.dp)
+                        )
+                        .padding(12.dp)
+                ) {
                     Checkbox(
                         checked = filterToday,
                         onCheckedChange = { filterToday = it }
                     )
-                    Text("Show today's tasks only")
+                    Text(
+                        "Show today's tasks only",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
                 }
             }
+
+            // Tasks section header
+            Text(
+                text = "MY TASKS",
+                style = MaterialTheme.typography.labelLarge,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.padding(horizontal = 20.dp, vertical = 20.dp)
+            )
 
             // List of tasks
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                contentPadding = PaddingValues(start = 20.dp, end = 20.dp, top = 0.dp, bottom = 80.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-
-                // Date and Time picker component
-                item {
-                    DateTimePicker(selectedDate, selectedTime) { date, time ->
-                        selectedDate = date
-                        selectedTime = time
-                    }
-                }
-
-                // Display message if no tasks found
+                // Display empty state if no tasks found
                 if (sortedTasks.isEmpty()) {
                     item {
-                        Text(
-                            text = "No tasks found.",
-                            style = MaterialTheme.typography.bodyLarge
-                        )
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(16.dp),
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                            )
+                        ) {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(48.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.EventNote,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(64.dp),
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+                                )
+                                Spacer(modifier = Modifier.height(16.dp))
+                                Text(
+                                    text = "No tasks yet",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Text(
+                                    text = "Tap + to add your first task",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    textAlign = TextAlign.Center
+                                )
+                            }
+                        }
                     }
                 }
 
@@ -161,7 +218,10 @@ fun ScheduleScreen(onBack: () -> Unit) {
                             editingTask = task
                             showDialog = true
                         },
-                        onDelete = { tasks.remove(task) }
+                        onDelete = {
+                            taskToDelete = task
+                            showDeleteConfirmDialog = true
+                        }
                     )
                 }
             }
@@ -181,14 +241,48 @@ fun ScheduleScreen(onBack: () -> Unit) {
                     if (index != -1) tasks[index] = task
                 }
                 showDialog = false
-                selectedDate = ""
-                selectedTime = ""
+            }
+        )
+    }
+
+    if (showDeleteConfirmDialog) {
+        DeleteConfirmationDialog(
+            task = taskToDelete,
+            onConfirm = {
+                taskToDelete?.let { tasks.remove(it) }
+                showDeleteConfirmDialog = false
+                taskToDelete = null
             },
-            initialDate = selectedDate,
-            initialTime = selectedTime
+            onDismiss = {
+                showDeleteConfirmDialog = false
+                taskToDelete = null
+            }
         )
     }
 }
+
+@Composable
+private fun DeleteConfirmationDialog(
+    task: Task?,
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit
+) {
+    if (task != null) {
+        AlertDialog(
+            onDismissRequest = onDismiss,
+            title = { Text("Delete Task") },
+            text = { Text("Are you sure you want to delete the task \"${task.title}\"?") },
+            confirmButton = {
+                Button(
+                    onClick = onConfirm,
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                ) { Text("Delete") }
+            },
+            dismissButton = { TextButton(onClick = onDismiss) { Text("Cancel") } }
+        )
+    }
+}
+
 
 // Enum class for sorting options
 enum class SortOrder {
@@ -223,32 +317,97 @@ fun SortDropDown(sortOrder: SortOrder, onSortOrderChange: (SortOrder) -> Unit) {
 fun TaskDialog(
     task: Task?,
     onDismiss: () -> Unit,
-    onSave: (Task) -> Unit,
-    initialDate: String,
-    initialTime: String
+    onSave: (Task) -> Unit
 ) {
     // Title input state
     var title by remember { mutableStateOf(task?.title ?: "") }
-    // Due date state
-    var dueDate by remember(task, initialDate, initialTime) {
-        mutableStateOf(task?.dueDate ?: "$initialDate $initialTime".trim())
+    // Due date state - format yyyy-MM-dd for storage
+    var dueDate by remember(task) {
+        mutableStateOf(task?.dueDate?.take(10) ?: "")
     }
     // Description input state
     var description by remember { mutableStateOf(task?.description ?: "") }
+
+    val context = LocalContext.current
+    val calendar = remember { java.util.Calendar.getInstance() }
+    val (initYear, initMonth, initDay) = remember(dueDate) {
+        val cal = java.util.Calendar.getInstance()
+        if (dueDate.isNotBlank()) {
+            try {
+                SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse(dueDate)?.let {
+                    cal.time = it
+                }
+            } catch (_: Exception) { }
+        }
+        Triple(cal.get(java.util.Calendar.YEAR), cal.get(java.util.Calendar.MONTH), cal.get(java.util.Calendar.DAY_OF_MONTH))
+    }
+    val datePickerDialog = remember(initYear, initMonth, initDay) {
+        DatePickerDialog(
+            context,
+            { _: DatePicker, year: Int, month: Int, dayOfMonth: Int ->
+                calendar.set(year, month, dayOfMonth)
+                dueDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(calendar.time)
+            },
+            initYear, initMonth, initDay
+        )
+    }
 
     // Dialog UI
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(if (task == null) "Add Task" else "Edit Task") },
         text = {
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                OutlinedTextField(value = title, onValueChange = { title = it }, label = { Text("Title") })
-                OutlinedTextField(value = dueDate, onValueChange = { dueDate = it }, label = { Text("Due Date") })
-                OutlinedTextField(value = description, onValueChange = { description = it }, label = { Text("Description") })
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                OutlinedTextField(
+                    value = title,
+                    onValueChange = { title = it },
+                    label = { Text("Title") },
+                    shape = RoundedCornerShape(12.dp),
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable(
+                            indication = null,
+                            interactionSource = remember { MutableInteractionSource() }
+                        ) { datePickerDialog.show() }
+                ) {
+                    OutlinedTextField(
+                        value = if (dueDate.isBlank()) "" else dueDate,
+                        onValueChange = { },
+                        label = { Text("Due Date") },
+                        placeholder = { Text("Tap to select date") },
+                        enabled = false,
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp),
+                        leadingIcon = {
+                            Icon(
+                                Icons.Default.CalendarToday,
+                                contentDescription = null
+                            )
+                        },
+                        colors = OutlinedTextFieldDefaults.colors(
+                            disabledTextColor = MaterialTheme.colorScheme.onSurface,
+                            disabledBorderColor = MaterialTheme.colorScheme.outline,
+                            disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                            disabledPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                            disabledLeadingIconColor = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    )
+                }
+                OutlinedTextField(
+                    value = description,
+                    onValueChange = { description = it },
+                    label = { Text("Description") },
+                    shape = RoundedCornerShape(12.dp),
+                    modifier = Modifier.fillMaxWidth()
+                )
             }
         },
         confirmButton = {
-            Button(onClick = {
+            Button(
+                onClick = {
                 if (title.isBlank()) return@Button
                 if (dueDate.isBlank()) return@Button
 
@@ -256,105 +415,63 @@ fun TaskDialog(
                     ?: Task(title = title, dueDate = dueDate, description = description)
 
                 onSave(newTask)
-            }) { Text("Save") }
+            },
+                shape = RoundedCornerShape(12.dp)
+            ) { Text("Save") }
         },
         dismissButton = { TextButton(onClick = onDismiss) { Text("Cancel") } }
     )
 }
 
 @Composable
-fun DateTimePicker(
-    selectedDate: String,
-    selectedTime: String,
-    onDateTimeSelected: (String, String) -> Unit
-) {
-    val context = LocalContext.current
-    val calendar = Calendar.getInstance()
-
-    // Date picker dialog
-    val datePickerDialog = android.app.DatePickerDialog(
-        context,
-        { _: DatePicker, year: Int, month: Int, dayOfMonth: Int ->
-            val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-            calendar.set(year, month, dayOfMonth)
-            onDateTimeSelected(sdf.format(calendar.time), selectedTime)
-        },
-        calendar.get(Calendar.YEAR),
-        calendar.get(Calendar.MONTH),
-        calendar.get(Calendar.DAY_OF_MONTH)
-    )
-
-    // Time picker dialog
-    val timePickerDialog = TimePickerDialog(
-        context,
-        { _, hourOfDay: Int, minute: Int ->
-            val sdf = SimpleDateFormat("HH:mm", Locale.getDefault())
-            calendar.set(Calendar.HOUR_OF_DAY, hourOfDay)
-            calendar.set(Calendar.MINUTE, minute)
-            onDateTimeSelected(selectedDate, sdf.format(calendar.time))
-        },
-        calendar.get(Calendar.HOUR_OF_DAY),
-        calendar.get(Calendar.MINUTE),
-        true
-    )
-
-    // Row containing date and time fields
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(16.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-
-        // Date field
-        Box(
-            modifier = Modifier.weight(1f).clickable { datePickerDialog.show() }
-        ) {
-            OutlinedTextField(
-                value = selectedDate,
-                onValueChange = {},
-                label = { Text("Date") },
-                placeholder = { Text("Select Date") },
-                leadingIcon = { Icon(Icons.Default.CalendarToday, contentDescription = "Date") },
-                readOnly = true,
-                enabled = false,
-                modifier = Modifier.fillMaxWidth()
-            )
-        }
-
-        // Time field
-        Box(
-            modifier = Modifier.weight(1f).clickable { timePickerDialog.show() }
-        ) {
-            OutlinedTextField(
-                value = selectedTime,
-                onValueChange = {},
-                label = { Text("Time") },
-                placeholder = { Text("Select Time") },
-                leadingIcon = { Icon(Icons.Default.Schedule, contentDescription = "Time") },
-                readOnly = true,
-                enabled = false,
-                modifier = Modifier.fillMaxWidth()
-            )
-        }
-    }
-}
-
-@Composable
 fun TaskItem(task: Task, onEdit: () -> Unit, onDelete: () -> Unit) {
-    // Card layout for each task
-    Card(modifier = Modifier.fillMaxWidth()) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
         Row(
-            modifier = Modifier.fillMaxWidth().padding(16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(20.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
         ) {
             Column(modifier = Modifier.weight(1f)) {
-                Text(task.title, fontWeight = FontWeight.Bold)
-                Text("Due: ${task.dueDate}")
-                Text(task.description)
+                Text(
+                    task.title,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Surface(
+                    shape = RoundedCornerShape(8.dp),
+                    color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f)
+                ) {
+                    Text(
+                        "Due: ${task.dueDate}",
+                        style = MaterialTheme.typography.labelMedium,
+                        fontWeight = FontWeight.Medium,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
+                    )
+                }
+                Spacer(modifier = Modifier.height(6.dp))
+                Text(
+                    task.description,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             }
-            Row {
-                IconButton(onClick = onEdit) { Icon(Icons.Default.Edit, "Edit") }
-                IconButton(onClick = onDelete) { Icon(Icons.Default.Delete, "Delete") }
+            Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                IconButton(onClick = onEdit) {
+                    Icon(Icons.Default.Edit, contentDescription = "Edit")
+                }
+                IconButton(onClick = onDelete) {
+                    Icon(Icons.Default.Delete, contentDescription = "Delete")
+                }
             }
         }
     }
@@ -363,7 +480,13 @@ fun TaskItem(task: Task, onEdit: () -> Unit, onDelete: () -> Unit) {
 @Preview(showBackground = true)
 @Composable
 fun ScheduleScreenPreview() {
+    val tasks = remember {
+        mutableStateListOf(
+            Task(title = "Complete Project Proposal", dueDate = "2024-08-15", description = "Finish the proposal."),
+            Task(title = "Study for Midterms", dueDate = "2024-08-20", description = "Cover chapters 4-6.")
+        )
+    }
     SmartCampusCompanionAppTheme {
-        ScheduleScreen(onBack = {})
+        ScheduleScreen(tasks = tasks, onBack = {})
     }
 }

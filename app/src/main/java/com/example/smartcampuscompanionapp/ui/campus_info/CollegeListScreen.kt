@@ -55,7 +55,6 @@ fun CollegeListScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            //for Colleges & Departments
             Text(
                 text = "COLLEGES & DEPARTMENTS",
                 style = MaterialTheme.typography.labelLarge,

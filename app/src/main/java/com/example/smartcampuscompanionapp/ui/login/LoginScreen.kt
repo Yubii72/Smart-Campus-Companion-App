@@ -63,7 +63,7 @@ fun LoginScreen(
         Spacer(modifier = Modifier.height(24.dp))
 
         Text(
-            text = "Login",
+            text = "LOGIN",
             style = MaterialTheme.typography.headlineMedium,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.primary

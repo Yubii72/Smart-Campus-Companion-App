@@ -40,21 +40,9 @@ fun ProfileScreen(
     showBackButton: Boolean = true,
     onSettingsClick: (() -> Unit)? = null
 ) {
-    val context = LocalContext.current
-    val database = AppDatabase.getDatabase(context)
-    val repository = StudentRepository(database.studentDao())
-
     // Load profile data when screen opens
     LaunchedEffect(studentNumber) {
         viewModel.loadProfile(studentNumber)
-    }
-
-    LaunchedEffect(viewModel.isFatherGuardian, viewModel.fatherFirstName, viewModel.fatherMiddleName, viewModel.fatherLastName) {
-        viewModel.syncGuardianFromFather()
-    }
-
-    LaunchedEffect(viewModel.isMotherGuardian, viewModel.motherFirstName, viewModel.motherMiddleName, viewModel.motherLastName) {
-        viewModel.syncGuardianFromMother()
     }
 
     Scaffold(
@@ -166,34 +154,10 @@ fun ProfileScreen(
                     alternateMobileNumber = viewModel.alternateMobileNumber,
                     primaryEmailAddress = viewModel.primaryEmailAddress,
                     alternateEmailAddress = viewModel.alternateEmailAddress,
-                    fatherFirstName = viewModel.fatherFirstName,
-                    fatherMiddleName = viewModel.fatherMiddleName,
-                    fatherLastName = viewModel.fatherLastName,
-                    fatherOccupation = viewModel.fatherOccupation,
-                    fatherDateOfBirth = viewModel.fatherDateOfBirth,
-                    fatherSexAtBirth = viewModel.fatherSexAtBirth,
-                    motherFirstName = viewModel.motherFirstName,
-                    motherMiddleName = viewModel.motherMiddleName,
-                    motherLastName = viewModel.motherLastName,
-                    motherOccupation = viewModel.motherOccupation,
-                    motherDateOfBirth = viewModel.motherDateOfBirth,
-                    motherSexAtBirth = viewModel.motherSexAtBirth,
-                    numberOfSiblings = viewModel.numberOfSiblings,
-                    familyAnnualIncome = viewModel.familyAnnualIncome,
-                    guardianFirstName = viewModel.guardianFirstName,
-                    guardianMiddleName = viewModel.guardianMiddleName,
-                    guardianLastName = viewModel.guardianLastName,
-                    relationToGuardian = viewModel.relationToGuardian,
-                    guardianContactNumber = viewModel.guardianContactNumber,
                     lastSchoolAttended = viewModel.lastSchoolAttended,
                     lastYearAttended = viewModel.lastYearAttended,
                     learnerReferenceNumber = viewModel.learnerReferenceNumber,
-                    honorsReceived = viewModel.honorsReceived,
-                    college = viewModel.college,
-                    program = viewModel.program,
-                    curriculum = viewModel.curriculum,
-                    yearLevel = viewModel.yearLevel,
-                    section = viewModel.section
+                    honorsReceived = viewModel.honorsReceived
                 )
             } else {
                 // EDIT MODE
@@ -236,15 +200,8 @@ fun OverviewSection(
     presentProvince: String, presentZIP: String, presentCity: String, presentBarangay: String, presentHouse: String,
     permanentProvince: String, permanentZIP: String, permanentCity: String, permanentBarangay: String, permanentHouse: String,
     primaryMobileNumber: String, alternateMobileNumber: String, primaryEmailAddress: String,
-    alternateEmailAddress: String, fatherFirstName: String, fatherMiddleName: String,
-    fatherLastName: String, fatherOccupation: String, fatherDateOfBirth: String,
-    fatherSexAtBirth: String, motherFirstName: String, motherMiddleName: String,
-    motherLastName: String, motherOccupation: String, motherDateOfBirth: String,
-    motherSexAtBirth: String, numberOfSiblings: String, familyAnnualIncome: String,
-    guardianFirstName: String, guardianMiddleName: String, guardianLastName: String,
-    relationToGuardian: String, guardianContactNumber: String, lastSchoolAttended: String,
-    lastYearAttended: String, learnerReferenceNumber: String, honorsReceived: String,
-    college: String, program: String, curriculum: String, yearLevel: String, section: String
+    alternateEmailAddress: String, lastSchoolAttended: String,
+    lastYearAttended: String, learnerReferenceNumber: String, honorsReceived: String
 ) {
     Column(modifier = Modifier.fillMaxWidth()) {
         ProfileSectionHeader("Personal Information", Icons.Default.Person)
@@ -263,46 +220,20 @@ fun OverviewSection(
 
         ProfileSectionHeader("Contact Information", Icons.Default.ContactPhone)
         OverviewDetailCard("Addresses & Contact") {
-        OverviewDetail("Present Address", "$presentHouse $presentBarangay, $presentCity, $presentProvince")
-        OverviewDetail("Permanent Address", "$permanentHouse $permanentBarangay, $permanentCity, $permanentProvince")
-        OverviewDetail("Primary Mobile Number", primaryMobileNumber)
-        OverviewDetail("Alternate Mobile Number", alternateMobileNumber)
-        OverviewDetail("Primary Email Address", primaryEmailAddress)
-        OverviewDetail("Alternate Email Address", alternateEmailAddress)
-        }
-
-        ProfileSectionHeader("Family Background", Icons.Default.Groups)
-        OverviewDetailCard("Family") {
-        OverviewDetail("Father's Name", "$fatherFirstName $fatherMiddleName $fatherLastName")
-        OverviewDetail("Father's Occupation", fatherOccupation)
-        OverviewDetail("Father's Date of Birth", fatherDateOfBirth)
-        OverviewDetail("Father's Sex at Birth", fatherSexAtBirth)
-        OverviewDetail("Mother's Name", "$motherFirstName $motherMiddleName $motherLastName")
-        OverviewDetail("Mother's Occupation", motherOccupation)
-        OverviewDetail("Mother's Date of Birth", motherDateOfBirth)
-        OverviewDetail("Mother's Sex at Birth", motherSexAtBirth)
-        OverviewDetail("Number of Siblings", numberOfSiblings)
-        OverviewDetail("Family's Annual Income", "Php ${"%,.2f".format(familyAnnualIncome.toDoubleOrNull() ?: 0.0)} (Php ${"%,.2f".format((familyAnnualIncome.toDoubleOrNull() ?: 0.0) / 12)} per month)")
-        OverviewDetail("Guardian's Name", "$guardianFirstName $guardianMiddleName $guardianLastName")
-        OverviewDetail("Relation to Guardian", relationToGuardian)
-        OverviewDetail("Guardian's Contact Number", guardianContactNumber)
+            OverviewDetail("Present Address", "$presentHouse, $presentBarangay, $presentCity, $presentProvince")
+            OverviewDetail("Permanent Address", "$permanentHouse, $permanentBarangay, $permanentCity, $permanentProvince")
+            OverviewDetail("Primary Mobile Number", primaryMobileNumber)
+            OverviewDetail("Alternate Mobile Number", alternateMobileNumber)
+            OverviewDetail("Primary Email Address", primaryEmailAddress)
+            OverviewDetail("Alternate Email Address", alternateEmailAddress)
         }
 
         ProfileSectionHeader("Educational Background", Icons.Default.School)
         OverviewDetailCard("Education") {
-        OverviewDetail("Last School Attended", lastSchoolAttended)
-        OverviewDetail("Last Year Attended", lastYearAttended)
-        OverviewDetail("Learner Reference Number", learnerReferenceNumber)
-        OverviewDetail("Honor/s Received", honorsReceived)
-        }
-
-        ProfileSectionHeader("Enrollment Details", Icons.Default.School)
-        OverviewDetailCard("Enrollment") {
-        OverviewDetail("College", college)
-        OverviewDetail("Program", program)
-        OverviewDetail("Curriculum", curriculum)
-        OverviewDetail("Year Level", yearLevel)
-        OverviewDetail("Section", section)
+            OverviewDetail("Last School Attended", lastSchoolAttended)
+            OverviewDetail("Last Year Attended", lastYearAttended)
+            OverviewDetail("Learner Reference Number", learnerReferenceNumber)
+            OverviewDetail("Honor/s Received", honorsReceived)
         }
     }
 }
@@ -344,60 +275,6 @@ fun EditSection(viewModel: ProfileViewModel) {
         EditField("Alternate Mobile Number", viewModel.alternateMobileNumber, { viewModel.alternateMobileNumber = it })
         EditField("Primary Email Address", viewModel.primaryEmailAddress, { viewModel.primaryEmailAddress = it }, isEditable = false)
         EditField("Alternate Email Address", viewModel.alternateEmailAddress, { viewModel.alternateEmailAddress = it })
-
-        ProfileSectionHeader("Father's Information", Icons.Default.AccountCircle)
-        EditField("First Name *", viewModel.fatherFirstName, { viewModel.fatherFirstName = it })
-        EditField("Middle Name *", viewModel.fatherMiddleName, { viewModel.fatherMiddleName = it })
-        EditField("Last Name *", viewModel.fatherLastName, { viewModel.fatherLastName = it })
-        
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Checkbox(checked = viewModel.isFatherGuardian, onCheckedChange = { viewModel.isFatherGuardian = it })
-            Text("Guardian")
-        }
-
-        EditField("Sex at Birth *", viewModel.fatherSexAtBirth, { viewModel.fatherSexAtBirth = it })
-        EditField("Date of Birth *", viewModel.fatherDateOfBirth, { viewModel.fatherDateOfBirth = it })
-        EditField("Occupation *", viewModel.fatherOccupation, { viewModel.fatherOccupation = it })
-
-        ProfileSectionHeader("Mother's Information", Icons.Default.AccountBox)
-        EditField("First Name *", viewModel.motherFirstName, { viewModel.motherFirstName = it })
-        EditField("Middle Name *", viewModel.motherMiddleName, { viewModel.motherMiddleName = it })
-        EditField("Last Name *", viewModel.motherLastName, { viewModel.motherLastName = it })
-
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Checkbox(checked = viewModel.isMotherGuardian, onCheckedChange = { viewModel.isMotherGuardian = it })
-            Text("Guardian")
-        }
-
-        EditField("Sex at Birth *", viewModel.motherSexAtBirth, { viewModel.motherSexAtBirth = it })
-        EditField("Date of Birth *", viewModel.motherDateOfBirth, { viewModel.motherDateOfBirth = it })
-        EditField("Occupation *", viewModel.motherOccupation, { viewModel.motherOccupation = it })
-
-        ProfileSectionHeader("Family Background", Icons.Default.Groups)
-        EditField("Number of Siblings *", viewModel.numberOfSiblings, { viewModel.numberOfSiblings = it }, keyboardType = KeyboardType.Number)
-        EditField("Family's Annual Income *", viewModel.familyAnnualIncome, { viewModel.familyAnnualIncome = it }, keyboardType = KeyboardType.Decimal)
-
-        ProfileSectionHeader("Guardian's Information", Icons.Default.Shield)
-        EditField("First Name *", viewModel.guardianFirstName, { 
-            viewModel.guardianFirstName = it 
-            viewModel.onGuardianManualEdit()
-        })
-        EditField("Middle Name *", viewModel.guardianMiddleName, { 
-            viewModel.guardianMiddleName = it 
-            viewModel.onGuardianManualEdit()
-        })
-        EditField("Last Name *", viewModel.guardianLastName, { 
-            viewModel.guardianLastName = it 
-            viewModel.onGuardianManualEdit()
-        })
-        EditField("Relationship to the Student *", viewModel.relationToGuardian, { 
-            viewModel.relationToGuardian = it 
-            viewModel.onGuardianManualEdit()
-        })
-        EditField("Contact Number *", viewModel.guardianContactNumber, { 
-            viewModel.guardianContactNumber = it 
-            viewModel.onGuardianManualEdit()
-        })
 
         ProfileSectionHeader("Educational Background", Icons.Default.School)
         EditField("Last School Attended *", viewModel.lastSchoolAttended, { viewModel.lastSchoolAttended = it })
@@ -471,12 +348,11 @@ fun EditField(
             .fillMaxWidth()
             .padding(vertical = 4.dp),
         readOnly = !isEditable,
-        enabled = isEditable, // Graying out uneditable fields
+        enabled = isEditable,
         colors = OutlinedTextFieldDefaults.colors(
             disabledTextColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
             disabledLabelColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
-            disabledBorderColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f),
-            disabledTrailingIconColor = Color.Red // Keeping the lock icon red
+            disabledBorderColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f)
         ),
         trailingIcon = {
             if (!isEditable) {
@@ -485,12 +361,4 @@ fun EditField(
         },
         keyboardOptions = KeyboardOptions(keyboardType = keyboardType)
     )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun ProfileScreenPreview() {
-    SmartCampusCompanionAppTheme {
-        // Mock Preview
-    }
 }

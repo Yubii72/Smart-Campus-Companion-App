@@ -48,46 +48,11 @@ class ProfileViewModel(private val repository: StudentRepository) : ViewModel() 
     var primaryEmailAddress by mutableStateOf("")
     var alternateEmailAddress by mutableStateOf("")
 
-    // Father
-    var fatherFirstName by mutableStateOf("")
-    var fatherMiddleName by mutableStateOf("")
-    var fatherLastName by mutableStateOf("")
-    var fatherOccupation by mutableStateOf("")
-    var fatherDateOfBirth by mutableStateOf("")
-    var fatherSexAtBirth by mutableStateOf("")
-    var isFatherGuardian by mutableStateOf(false)
-
-    // Mother
-    var motherFirstName by mutableStateOf("")
-    var motherMiddleName by mutableStateOf("")
-    var motherLastName by mutableStateOf("")
-    var motherOccupation by mutableStateOf("")
-    var motherDateOfBirth by mutableStateOf("")
-    var motherSexAtBirth by mutableStateOf("")
-    var isMotherGuardian by mutableStateOf(false)
-
-    var numberOfSiblings by mutableStateOf("")
-    var familyAnnualIncome by mutableStateOf("")
-
-    // Guardian
-    var guardianFirstName by mutableStateOf("")
-    var guardianMiddleName by mutableStateOf("")
-    var guardianLastName by mutableStateOf("")
-    var relationToGuardian by mutableStateOf("")
-    var guardianContactNumber by mutableStateOf("")
-
     // Educational
     var lastSchoolAttended by mutableStateOf("")
     var lastYearAttended by mutableStateOf("")
     var learnerReferenceNumber by mutableStateOf("")
     var honorsReceived by mutableStateOf("")
-
-    // Enrollment
-    var college by mutableStateOf("")
-    var program by mutableStateOf("")
-    var curriculum by mutableStateOf("")
-    var yearLevel by mutableStateOf("")
-    var section by mutableStateOf("")
 
     fun loadProfile(studentNum: String) {
         viewModelScope.launch {
@@ -105,66 +70,28 @@ class ProfileViewModel(private val repository: StudentRepository) : ViewModel() 
                 dateOfBirth = student.dateOfBirth
                 placeOfBirth = student.placeOfBirth
 
-                // Parse address components (assuming simple comma separation for now)
-                // For a production app, these would be separate columns in DB
-                presentHouse = student.presentAddress.split(", ").getOrNull(0) ?: ""
-                presentBarangay = student.presentAddress.split(", ").getOrNull(1) ?: ""
-                presentCity = student.presentAddress.split(", ").getOrNull(2) ?: ""
-                presentProvince = student.presentAddress.split(", ").getOrNull(3) ?: ""
+                // Parse address components
+                val presentParts = student.presentAddress.split(", ")
+                presentHouse = presentParts.getOrNull(0) ?: ""
+                presentBarangay = presentParts.getOrNull(1) ?: ""
+                presentCity = presentParts.getOrNull(2) ?: ""
+                presentProvince = presentParts.getOrNull(3) ?: ""
                 
-                permanentHouse = student.permanentAddress.split(", ").getOrNull(0) ?: ""
-                permanentBarangay = student.permanentAddress.split(", ").getOrNull(1) ?: ""
-                permanentCity = student.permanentAddress.split(", ").getOrNull(2) ?: ""
-                permanentProvince = student.permanentAddress.split(", ").getOrNull(3) ?: ""
+                val permanentParts = student.permanentAddress.split(", ")
+                permanentHouse = permanentParts.getOrNull(0) ?: ""
+                permanentBarangay = permanentParts.getOrNull(1) ?: ""
+                permanentCity = permanentParts.getOrNull(2) ?: ""
+                permanentProvince = permanentParts.getOrNull(3) ?: ""
 
                 primaryMobileNumber = student.primaryMobileNumber
                 alternateMobileNumber = student.alternateMobileNumber
                 primaryEmailAddress = student.primaryEmailAddress
                 alternateEmailAddress = student.alternateEmailAddress
 
-                // Family - Father
-                val fNames = student.fathersName.split(" ")
-                fatherFirstName = fNames.getOrNull(0) ?: ""
-                fatherMiddleName = fNames.getOrNull(1) ?: ""
-                fatherLastName = fNames.getOrNull(2) ?: ""
-                fatherOccupation = student.fathersOccupation
-                fatherDateOfBirth = student.fathersDateOfBirth
-                fatherSexAtBirth = student.fathersSexAtBirth
-
-                // Family - Mother
-                val mNames = student.mothersName.split(" ")
-                motherFirstName = mNames.getOrNull(0) ?: ""
-                motherMiddleName = mNames.getOrNull(1) ?: ""
-                motherLastName = mNames.getOrNull(2) ?: ""
-                motherOccupation = student.mothersOccupation
-                motherDateOfBirth = student.mothersDateOfBirth
-                motherSexAtBirth = student.mothersSexAtBirth
-
-                numberOfSiblings = student.numberOfSiblings.toString()
-                familyAnnualIncome = student.familyAnnualIncome.toString()
-
-                // Guardian
-                val gNames = student.guardiansName.split(" ")
-                guardianFirstName = gNames.getOrNull(0) ?: ""
-                guardianMiddleName = gNames.getOrNull(1) ?: ""
-                guardianLastName = gNames.getOrNull(2) ?: ""
-                relationToGuardian = student.relationToGuardian
-                guardianContactNumber = student.guardiansContactNumber
-                
-                // Determine if parent is guardian
-                isFatherGuardian = student.guardiansName == student.fathersName
-                isMotherGuardian = student.guardiansName == student.mothersName
-
                 lastSchoolAttended = student.lastSchoolAttended
                 lastYearAttended = student.lastYearAttended
                 learnerReferenceNumber = student.learnerReferenceNumber
                 honorsReceived = student.honorsReceived
-
-                college = student.college
-                program = student.program
-                curriculum = student.curriculum
-                yearLevel = student.yearLevel
-                section = student.section
             }
         }
     }
@@ -189,57 +116,14 @@ class ProfileViewModel(private val repository: StudentRepository) : ViewModel() 
                 alternateMobileNumber = alternateMobileNumber,
                 primaryEmailAddress = primaryEmailAddress,
                 alternateEmailAddress = alternateEmailAddress,
-                fathersName = "$fatherFirstName $fatherMiddleName $fatherLastName",
-                fathersOccupation = fatherOccupation,
-                fathersDateOfBirth = fatherDateOfBirth,
-                fathersSexAtBirth = fatherSexAtBirth,
-                mothersName = "$motherFirstName $motherMiddleName $motherLastName",
-                mothersOccupation = motherOccupation,
-                mothersDateOfBirth = motherDateOfBirth,
-                mothersSexAtBirth = motherSexAtBirth,
-                numberOfSiblings = numberOfSiblings.toIntOrNull() ?: 0,
-                familyAnnualIncome = familyAnnualIncome.toDoubleOrNull() ?: 0.0,
-                guardiansName = "$guardianFirstName $guardianMiddleName $guardianLastName",
-                relationToGuardian = relationToGuardian,
-                guardiansContactNumber = guardianContactNumber,
                 lastSchoolAttended = lastSchoolAttended,
                 lastYearAttended = lastYearAttended,
                 learnerReferenceNumber = learnerReferenceNumber,
-                honorsReceived = honorsReceived,
-                college = college,
-                program = program,
-                curriculum = curriculum,
-                yearLevel = yearLevel,
-                section = section
+                honorsReceived = honorsReceived
             )
             repository.insertStudent(updatedStudent)
             isEditMode = false
         }
-    }
-
-    fun syncGuardianFromFather() {
-        if (isFatherGuardian) {
-            guardianFirstName = fatherFirstName
-            guardianMiddleName = fatherMiddleName
-            guardianLastName = fatherLastName
-            relationToGuardian = "Father"
-            isMotherGuardian = false
-        }
-    }
-
-    fun syncGuardianFromMother() {
-        if (isMotherGuardian) {
-            guardianFirstName = motherFirstName
-            guardianMiddleName = motherMiddleName
-            guardianLastName = motherLastName
-            relationToGuardian = "Mother"
-            isFatherGuardian = false
-        }
-    }
-
-    fun onGuardianManualEdit() {
-        isFatherGuardian = false
-        isMotherGuardian = false
     }
 }
 

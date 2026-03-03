@@ -27,34 +27,9 @@ data class Student(
     val primaryEmailAddress: String,
     val alternateEmailAddress: String,
 
-    // Family Background
-    val fathersName: String,
-    val fathersOccupation: String,
-    val fathersDateOfBirth: String,
-    val fathersSexAtBirth: String,
-
-    val mothersName: String,
-    val mothersOccupation: String,
-    val mothersDateOfBirth: String,
-    val mothersSexAtBirth: String,
-
-    val numberOfSiblings: Int,
-    val familyAnnualIncome: Double,
-
-    val guardiansName: String,
-    val relationToGuardian: String,
-    val guardiansContactNumber: String,
-
     // Educational Background
     val lastSchoolAttended: String,
     val lastYearAttended: String,
     val learnerReferenceNumber: String,
-    val honorsReceived: String,
-
-    // Enrollment Details
-    val college: String,
-    val program: String,
-    val curriculum: String,
-    val yearLevel: String,
-    val section: String
+    val honorsReceived: String
 )

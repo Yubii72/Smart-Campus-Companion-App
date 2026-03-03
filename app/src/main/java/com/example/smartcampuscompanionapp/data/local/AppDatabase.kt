@@ -11,7 +11,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-@Database(entities = [Student::class], version = 1, exportSchema = false)
+@Database(entities = [Student::class], version = 3, exportSchema = false)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun studentDao(): StudentDao
 
@@ -26,65 +26,53 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     "smart_campus_db"
                 )
-                .addCallback(DatabaseCallback())
+                .fallbackToDestructiveMigration()
+                .addCallback(object : RoomDatabase.Callback() {
+                    override fun onCreate(db: SupportSQLiteDatabase) {
+                        super.onCreate(db)
+                        CoroutineScope(Dispatchers.IO).launch {
+                            getDatabase(context).studentDao().insertStudent(getDemoStudent())
+                        }
+                    }
+                    
+                    override fun onOpen(db: SupportSQLiteDatabase) {
+                        super.onOpen(db)
+                        CoroutineScope(Dispatchers.IO).launch {
+                            val dao = getDatabase(context).studentDao()
+                            if (dao.getStudentCount() == 0) {
+                                dao.insertStudent(getDemoStudent())
+                            }
+                        }
+                    }
+                })
                 .build()
                 INSTANCE = instance
                 instance
             }
         }
 
-        private class DatabaseCallback : RoomDatabase.Callback() {
-            override fun onCreate(db: SupportSQLiteDatabase) {
-                super.onCreate(db)
-                INSTANCE?.let { database ->
-                    CoroutineScope(Dispatchers.IO).launch {
-                        val studentDao = database.studentDao()
-                        studentDao.insertStudent(
-                            Student(
-                                studentNumber = "2024-0001",
-                                password = "password123",
-                                firstName = "Mark",
-                                lastName = "Dela Cruz",
-                                sexAtBirth = "Male",
-                                civilStatus = "Single",
-                                residency = "Local",
-                                nationality = "Filipino",
-                                religion = "Catholic",
-                                dateOfBirth = "2002-01-01",
-                                placeOfBirth = "Manila",
-                                presentAddress = "123 Main St, Quezon City",
-                                permanentAddress = "123 Main St, Quezon City",
-                                primaryMobileNumber = "09123456789",
-                                alternateMobileNumber = "09987654321",
-                                primaryEmailAddress = "student@university.edu.ph",
-                                alternateEmailAddress = "personal@email.com",
-                                fathersName = "Juan Dela Cruz",
-                                fathersOccupation = "Engineer",
-                                fathersDateOfBirth = "1975-05-15",
-                                fathersSexAtBirth = "Male",
-                                mothersName = "Maria Dela Cruz",
-                                mothersOccupation = "Teacher",
-                                mothersDateOfBirth = "1978-08-20",
-                                mothersSexAtBirth = "Female",
-                                numberOfSiblings = 2,
-                                familyAnnualIncome = 500000.0,
-                                guardiansName = "Juan Dela Cruz",
-                                relationToGuardian = "Father",
-                                guardiansContactNumber = "09123456789",
-                                lastSchoolAttended = "City High School",
-                                lastYearAttended = "2023",
-                                learnerReferenceNumber = "123456789012",
-                                honorsReceived = "With Honors",
-                                college = "College of Business Administration and Accountancy",
-                                program = "Bachelor of Science in Accountancy",
-                                curriculum = "2024 Revised",
-                                yearLevel = "1st Year",
-                                section = "A"
-                            )
-                        )
-                    }
-                }
-            }
-        }
+        private fun getDemoStudent() = Student(
+            studentNumber = "2024-0001",
+            password = "password123",
+            firstName = "Mark",
+            lastName = "Dela Cruz",
+            sexAtBirth = "Male",
+            civilStatus = "Single",
+            residency = "Local",
+            nationality = "Filipino",
+            religion = "Catholic",
+            dateOfBirth = "2002-01-01",
+            placeOfBirth = "Manila",
+            presentAddress = "123 Main St, Quezon City",
+            permanentAddress = "123 Main St, Quezon City",
+            primaryMobileNumber = "09123456789",
+            alternateMobileNumber = "09987654321",
+            primaryEmailAddress = "student@university.edu.ph",
+            alternateEmailAddress = "personal@email.com",
+            lastSchoolAttended = "City High School",
+            lastYearAttended = "2023",
+            learnerReferenceNumber = "123456789012",
+            honorsReceived = "With Honors"
+        )
     }
 }

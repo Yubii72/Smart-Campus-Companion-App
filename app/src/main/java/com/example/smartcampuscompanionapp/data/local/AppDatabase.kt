@@ -52,8 +52,8 @@ abstract class AppDatabase : RoomDatabase() {
         }
 
         private fun getDemoStudent() = Student(
-            studentNumber = "2024-0001",
-            password = "password123",
+            studentNumber = "2024-0001", // username
+            password = "password123", // password
             firstName = "Mark",
             lastName = "Dela Cruz",
             sexAtBirth = "Male",

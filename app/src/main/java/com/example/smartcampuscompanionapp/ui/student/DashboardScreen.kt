@@ -1,4 +1,4 @@
-package com.example.smartcampuscompanionapp.ui.dashboard
+package com.example.smartcampuscompanionapp.ui.student
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -27,7 +27,6 @@ import com.example.smartcampuscompanionapp.ui.campus_info.colleges
 import com.example.smartcampuscompanionapp.ui.schedule.Task
 import com.example.smartcampuscompanionapp.ui.theme.SmartCampusCompanionAppTheme
 
-// Placeholder progress data (UI only)
 data class SubjectProgress(
     val name: String,
     val description: String,
@@ -100,7 +99,6 @@ fun DashboardScreen(
         ) {
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Top section: Welcome and Stats
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(20.dp),
@@ -190,7 +188,6 @@ fun DashboardScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // My Progress Section
             SectionHeader("MY PROGRESS")
             Spacer(modifier = Modifier.height(12.dp))
             subjectProgresses.forEach { subject ->
@@ -205,7 +202,6 @@ fun DashboardScreen(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // My Tasks Section
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -263,7 +259,6 @@ fun DashboardScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Campus Information Preview
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,

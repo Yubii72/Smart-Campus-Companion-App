@@ -1,4 +1,4 @@
-package com.example.smartcampuscompanionapp.ui.announcement
+package com.example.smartcampuscompanionapp.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -29,6 +29,12 @@ class AnnouncementViewModel(private val repository: AnnouncementRepository) : Vi
     fun deleteAnnouncement(announcement: Announcement) {
         viewModelScope.launch {
             repository.delete(announcement)
+        }
+    }
+
+    fun markAsRead(announcement: Announcement) {
+        viewModelScope.launch {
+            repository.update(announcement.copy(isRead = true))
         }
     }
 }

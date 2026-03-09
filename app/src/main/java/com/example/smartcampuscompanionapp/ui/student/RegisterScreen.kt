@@ -1,4 +1,4 @@
-package com.example.smartcampuscompanionapp.ui.login
+package com.example.smartcampuscompanionapp.ui.student
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -6,16 +6,14 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import com.example.smartcampuscompanionapp.data.local.entities.Student
+import com.example.smartcampuscompanionapp.ui.viewmodel.LoginViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -30,7 +28,6 @@ fun RegisterScreen(
     var lastName by remember { mutableStateOf("") }
     
     var showError by remember { mutableStateOf<String?>(null) }
-    val scope = rememberCoroutineScope()
 
     Scaffold(
         topBar = {

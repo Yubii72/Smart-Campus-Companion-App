@@ -5,15 +5,18 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
+import com.example.smartcampuscompanionapp.data.local.dao.AnnouncementDao
 import com.example.smartcampuscompanionapp.data.local.dao.StudentDao
+import com.example.smartcampuscompanionapp.data.local.entities.Announcement
 import com.example.smartcampuscompanionapp.data.local.entities.Student
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-@Database(entities = [Student::class], version = 3, exportSchema = false)
+@Database(entities = [Student::class, Announcement::class], version = 4, exportSchema = false)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun studentDao(): StudentDao
+    abstract fun announcementDao(): AnnouncementDao
 
     companion object {
         @Volatile
@@ -31,16 +34,23 @@ abstract class AppDatabase : RoomDatabase() {
                     override fun onCreate(db: SupportSQLiteDatabase) {
                         super.onCreate(db)
                         CoroutineScope(Dispatchers.IO).launch {
-                            getDatabase(context).studentDao().insertStudent(getDemoStudent())
+                            val database = getDatabase(context)
+                            database.studentDao().insertStudent(getDemoStudent())
+                            insertDemoAnnouncements(database.announcementDao())
                         }
                     }
                     
                     override fun onOpen(db: SupportSQLiteDatabase) {
                         super.onOpen(db)
                         CoroutineScope(Dispatchers.IO).launch {
-                            val dao = getDatabase(context).studentDao()
-                            if (dao.getStudentCount() == 0) {
-                                dao.insertStudent(getDemoStudent())
+                            val database = getDatabase(context)
+                            val studentDao = database.studentDao()
+                            if (studentDao.getStudentCount() == 0) {
+                                studentDao.insertStudent(getDemoStudent())
+                            }
+                            val announcementDao = database.announcementDao()
+                            if (announcementDao.getAnnouncementCount() == 0) {
+                                insertDemoAnnouncements(announcementDao)
                             }
                         }
                     }
@@ -49,6 +59,27 @@ abstract class AppDatabase : RoomDatabase() {
                 INSTANCE = instance
                 instance
             }
+        }
+
+        private suspend fun insertDemoAnnouncements(dao: AnnouncementDao) {
+            val demos = listOf(
+                Announcement(
+                    title = "Final Examination Schedule",
+                    date = "Oct 24, 2024",
+                    content = "The final examination schedule for the first semester has been posted on the university website."
+                ),
+                Announcement(
+                    title = "Campus Maintenance",
+                    date = "Oct 20, 2024",
+                    content = "The library will be closed this coming weekend for scheduled maintenance."
+                ),
+                Announcement(
+                    title = "Foundation Day Celebration",
+                    date = "Oct 15, 2024",
+                    content = "Join us for the 50th Foundation Day celebration next month! Registration for events is now open."
+                )
+            )
+            demos.forEach { dao.insertAnnouncement(it) }
         }
 
         private fun getDemoStudent() = Student(

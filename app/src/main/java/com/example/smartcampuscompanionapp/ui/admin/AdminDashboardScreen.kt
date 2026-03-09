@@ -1,4 +1,4 @@
-package com.example.smartcampuscompanionapp.ui.dashboard
+package com.example.smartcampuscompanionapp.ui.admin
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -32,7 +32,7 @@ fun AdminDashboardScreen(
     val adminItems = listOf(
         NavigationItem(
             title = "Manage Announcements",
-            icon = Icons.Default.Announcement,
+            icon = Icons.Default.Campaign,
             description = "Post and edit campus updates"
         ),
         NavigationItem(

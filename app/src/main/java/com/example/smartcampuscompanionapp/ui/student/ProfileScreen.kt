@@ -1,4 +1,4 @@
-package com.example.smartcampuscompanionapp.ui.profile
+package com.example.smartcampuscompanionapp.ui.student
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -30,6 +30,7 @@ import com.example.smartcampuscompanionapp.data.local.AppDatabase
 import com.example.smartcampuscompanionapp.data.repository.StudentRepository
 import com.example.smartcampuscompanionapp.ui.theme.SmartCampusCompanionAppTheme
 import androidx.compose.ui.platform.LocalContext
+import com.example.smartcampuscompanionapp.ui.viewmodel.ProfileViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -42,7 +43,6 @@ fun ProfileScreen(
     val repository = StudentRepository(database.studentDao())
     val viewModel: ProfileViewModel = viewModel(factory = ProfileViewModelFactory(repository))
 
-    // Load profile data when screen opens
     LaunchedEffect(studentNumber) {
         viewModel.loadProfile(studentNumber)
     }
@@ -91,7 +91,6 @@ fun ProfileScreen(
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // AVATAR IN CENTER
             Box(contentAlignment = Alignment.BottomEnd, modifier = Modifier.padding(vertical = 16.dp)) {
                 Image(
                     painter = painterResource(id = R.drawable.irang),
@@ -108,7 +107,7 @@ fun ProfileScreen(
                         modifier = Modifier
                             .size(36.dp)
                             .clip(CircleShape)
-                            .clickable { /* Handle change avatar */ }
+                            .clickable { }
                     ) {
                         Icon(
                             imageVector = Icons.Default.Edit,
@@ -121,7 +120,6 @@ fun ProfileScreen(
             }
 
             if (!viewModel.isEditMode) {
-                // OVERVIEW MODE
                 OverviewSection(
                     studentNumber = viewModel.studentNumber,
                     sexAtBirth = viewModel.sexAtBirth,
@@ -175,7 +173,6 @@ fun ProfileScreen(
                     section = viewModel.section
                 )
             } else {
-                // EDIT MODE
                 EditSection(viewModel)
             }
         }
@@ -407,12 +404,12 @@ fun EditField(
             .fillMaxWidth()
             .padding(vertical = 4.dp),
         readOnly = !isEditable,
-        enabled = isEditable, // Graying out uneditable fields
+        enabled = isEditable,
         colors = OutlinedTextFieldDefaults.colors(
             disabledTextColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
             disabledLabelColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
             disabledBorderColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f),
-            disabledTrailingIconColor = Color.Red // Keeping the lock icon red
+            disabledTrailingIconColor = Color.Red
         ),
         trailingIcon = {
             if (!isEditable) {
@@ -421,12 +418,4 @@ fun EditField(
         },
         keyboardOptions = KeyboardOptions(keyboardType = keyboardType)
     )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun ProfileScreenPreview() {
-    SmartCampusCompanionAppTheme {
-        // Mock Preview
-    }
 }

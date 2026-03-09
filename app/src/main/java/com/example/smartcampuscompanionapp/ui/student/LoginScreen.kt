@@ -1,4 +1,4 @@
-package com.example.smartcampuscompanionapp.ui.login
+package com.example.smartcampuscompanionapp.ui.student
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -16,11 +16,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.example.smartcampuscompanionapp.ui.viewmodel.LoginViewModel
+import com.example.smartcampuscompanionapp.ui.viewmodel.LoginUiState
 
 @Composable
 fun LoginScreen(
     viewModel: LoginViewModel,
-    onLoginSuccess: (String) -> Unit
+    onLoginSuccess: (String, Boolean) -> Unit,
+    onRegisterClick: () -> Unit
 ) {
     var studentNumber by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -29,7 +32,8 @@ fun LoginScreen(
 
     LaunchedEffect(uiState) {
         if (uiState is LoginUiState.Success) {
-            onLoginSuccess(studentNumber)
+            val isAdmin = studentNumber.lowercase() == "admin"
+            onLoginSuccess(studentNumber, isAdmin)
             viewModel.resetState()
         }
     }
@@ -161,14 +165,10 @@ fun LoginScreen(
             }
         }
         
-        if (uiState is LoginUiState.Loading) {
-            Spacer(modifier = Modifier.height(16.dp))
-            Text(
-                text = "Verifying account...",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(horizontal = 24.dp)
-            )
+        Spacer(modifier = Modifier.height(24.dp))
+        
+        TextButton(onClick = onRegisterClick) {
+            Text("Don't have an account? Register here")
         }
     }
 }

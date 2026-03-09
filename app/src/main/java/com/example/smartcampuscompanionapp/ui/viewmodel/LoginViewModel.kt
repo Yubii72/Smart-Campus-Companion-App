@@ -1,8 +1,9 @@
-package com.example.smartcampuscompanionapp.ui.login
+package com.example.smartcampuscompanionapp.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.example.smartcampuscompanionapp.data.local.entities.Student
 import com.example.smartcampuscompanionapp.data.repository.StudentRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -24,12 +25,17 @@ class LoginViewModel(private val repository: StudentRepository) : ViewModel() {
 
         viewModelScope.launch {
             val student = repository.getStudentByNumber(studentNumber)
-            // In a production app, use password hashing comparison here
             if (student != null && student.password == password) {
                 _uiState.value = LoginUiState.Success
             } else {
                 _uiState.value = LoginUiState.Error("Invalid student number or password")
             }
+        }
+    }
+
+    fun register(student: Student) {
+        viewModelScope.launch {
+            repository.insertStudent(student)
         }
     }
 

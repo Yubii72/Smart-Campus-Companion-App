@@ -10,5 +10,6 @@ data class Announcement(
     val title: String,
     val content: String,
     val date: String,
-    val author: String = "Admin"
+    val author: String = "Admin",
+    val isRead: Boolean = false
 )

@@ -1,5 +1,6 @@
-package com.example.smartcampuscompanionapp.ui.announcement
+package com.example.smartcampuscompanionapp.ui.student
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -9,9 +10,11 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.smartcampuscompanionapp.data.local.entities.Announcement
+import com.example.smartcampuscompanionapp.ui.viewmodel.AnnouncementViewModel
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -62,7 +65,8 @@ fun AnnouncementScreen(
                             announcement = announcement,
                             isAdmin = isAdmin,
                             onEdit = { announcementToEdit = announcement },
-                            onDelete = { viewModel.deleteAnnouncement(announcement) }
+                            onDelete = { viewModel.deleteAnnouncement(announcement) },
+                            onMarkAsRead = { viewModel.markAsRead(announcement) }
                         )
                     }
                 }
@@ -99,11 +103,20 @@ fun AnnouncementCard(
     announcement: Announcement,
     isAdmin: Boolean,
     onEdit: () -> Unit,
-    onDelete: () -> Unit
+    onDelete: () -> Unit,
+    onMarkAsRead: () -> Unit
 ) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(!isAdmin && !announcement.isRead) { onMarkAsRead() },
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = if (!isAdmin && !announcement.isRead) 
+                MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f) 
+            else 
+                MaterialTheme.colorScheme.surface
+        )
     ) {
         Column(
             modifier = Modifier.padding(16.dp)
@@ -114,11 +127,19 @@ fun AnnouncementCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = announcement.title,
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold
-                    )
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            text = announcement.title,
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = if (!isAdmin && !announcement.isRead) FontWeight.ExtraBold else FontWeight.Bold
+                        )
+                        if (!isAdmin && !announcement.isRead) {
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Badge(containerColor = MaterialTheme.colorScheme.primary) {
+                                Text("New", color = Color.White, style = MaterialTheme.typography.labelSmall)
+                            }
+                        }
+                    }
                     Text(
                         text = announcement.date,
                         style = MaterialTheme.typography.labelSmall,

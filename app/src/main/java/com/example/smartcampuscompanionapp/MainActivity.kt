@@ -69,8 +69,6 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        loginViewModel.seedDataIfEmpty()
-
         val sharedPreferences = getSharedPreferences("smart_campus_prefs", Context.MODE_PRIVATE)
 
         enableEdgeToEdge()
@@ -86,7 +84,7 @@ class MainActivity : ComponentActivity() {
                     var isLoggedIn by remember {
                         mutableStateOf(sharedPreferences.getBoolean("is_logged_in", false))
                     }
-                    var studentNumber by remember { mutableStateOf(sharedPreferences.getString("student_number", "")) }
+                    var studentNumber by remember { mutableStateOf(sharedPreferences.getString("student_number", "") ?: "") }
 
                     var currentTab by remember { mutableStateOf(MainTab.Dashboard) }
                     var overlayScreen by remember { mutableStateOf<String?>(null) }
@@ -156,6 +154,7 @@ class MainActivity : ComponentActivity() {
                                                     .apply()
                                                 isLoggedIn = false
                                                 overlayScreen = null
+                                                studentNumber = ""
                                             },
                                             onBack = { overlayScreen = null }
                                         )
@@ -221,7 +220,7 @@ class MainActivity : ComponentActivity() {
                                                             }
                                                         }
                                                         ProfileScreen(
-                                                            studentNumber = studentNumber ?: "",
+                                                            studentNumber = studentNumber,
                                                             onBack = { },
                                                             viewModel = profileViewModel,
                                                             showBackButton = false,
@@ -238,8 +237,12 @@ class MainActivity : ComponentActivity() {
                         }
                         else -> LoginScreen(
                             viewModel = loginViewModel,
-                            onLoginSuccess = {
-                                sharedPreferences.edit { putBoolean("is_logged_in", true) }
+                            onLoginSuccess = { studentNum ->
+                                sharedPreferences.edit { 
+                                    putBoolean("is_logged_in", true) 
+                                    putString("student_number", studentNum)
+                                }
+                                studentNumber = studentNum
                                 isLoggedIn = true
                             }
                         )

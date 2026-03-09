@@ -32,7 +32,7 @@ fun CollegeListScreen(
             TopAppBar(
                 title = {
                     Text(
-                        text = "Colleges",
+                        text = "Campus Information",
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold
                     )
@@ -50,15 +50,29 @@ fun CollegeListScreen(
             )
         }
     ) { paddingValues ->
-        LazyVerticalGrid(
-            columns = GridCells.Fixed(2),
-            contentPadding = PaddingValues(16.dp),
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-            modifier = Modifier.padding(paddingValues)
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
         ) {
-            items(colleges) { college ->
-                CollegeCard(college = college, onClick = { onCollegeClick(college) })
+            //for Colleges & Departments
+            Text(
+                text = "COLLEGES & DEPARTMENTS",
+                style = MaterialTheme.typography.labelLarge,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.padding(horizontal = 20.dp, vertical = 16.dp)
+            )
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(2),
+                contentPadding = PaddingValues(start = 20.dp, top = 0.dp, end = 20.dp, bottom = 24.dp),
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+                modifier = Modifier.fillMaxSize()
+            ) {
+                items(colleges) { college ->
+                    CollegeCard(college = college, onClick = { onCollegeClick(college) })
+                }
             }
         }
     }
@@ -74,13 +88,14 @@ fun CollegeCard(
             .fillMaxWidth()
             .aspectRatio(1f)
             .clickable { onClick() },
-        shape = RoundedCornerShape(16.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(12.dp),
+                .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
@@ -88,11 +103,11 @@ fun CollegeCard(
                 painter = painterResource(id = college.logoRes),
                 contentDescription = college.name,
                 modifier = Modifier
-                    .size(80.dp)
-                    .clip(RoundedCornerShape(8.dp)),
+                    .size(72.dp)
+                    .clip(RoundedCornerShape(12.dp)),
                 contentScale = ContentScale.Fit
             )
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(12.dp))
             Text(
                 text = college.name,
                 style = MaterialTheme.typography.titleMedium,
@@ -100,12 +115,14 @@ fun CollegeCard(
                 textAlign = TextAlign.Center,
                 color = college.primaryColor
             )
+            Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = college.fullName,
                 style = MaterialTheme.typography.bodySmall,
                 textAlign = TextAlign.Center,
                 maxLines = 2,
-                lineHeight = 14.sp
+                lineHeight = 14.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
     }

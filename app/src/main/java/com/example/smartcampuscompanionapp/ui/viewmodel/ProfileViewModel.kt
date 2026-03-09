@@ -1,4 +1,4 @@
-package com.example.smartcampuscompanionapp.ui.profile
+package com.example.smartcampuscompanionapp.ui.viewmodel
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -20,7 +20,7 @@ class ProfileViewModel(private val repository: StudentRepository) : ViewModel() 
     var nameExtension by mutableStateOf("")
 
     var studentNumber by mutableStateOf("")
-    var password by mutableStateOf("") // Need this to preserve it during updates
+    var password by mutableStateOf("") 
     
     var sexAtBirth by mutableStateOf("")
     var civilStatus by mutableStateOf("")
@@ -105,8 +105,6 @@ class ProfileViewModel(private val repository: StudentRepository) : ViewModel() 
                 dateOfBirth = student.dateOfBirth
                 placeOfBirth = student.placeOfBirth
 
-                // Parse address components (assuming simple comma separation for now)
-                // For a production app, these would be separate columns in DB
                 presentHouse = student.presentAddress.split(", ").getOrNull(0) ?: ""
                 presentBarangay = student.presentAddress.split(", ").getOrNull(1) ?: ""
                 presentCity = student.presentAddress.split(", ").getOrNull(2) ?: ""
@@ -122,7 +120,6 @@ class ProfileViewModel(private val repository: StudentRepository) : ViewModel() 
                 primaryEmailAddress = student.primaryEmailAddress
                 alternateEmailAddress = student.alternateEmailAddress
 
-                // Family - Father
                 val fNames = student.fathersName.split(" ")
                 fatherFirstName = fNames.getOrNull(0) ?: ""
                 fatherMiddleName = fNames.getOrNull(1) ?: ""
@@ -131,7 +128,6 @@ class ProfileViewModel(private val repository: StudentRepository) : ViewModel() 
                 fatherDateOfBirth = student.fathersDateOfBirth
                 fatherSexAtBirth = student.fathersSexAtBirth
 
-                // Family - Mother
                 val mNames = student.mothersName.split(" ")
                 motherFirstName = mNames.getOrNull(0) ?: ""
                 motherMiddleName = mNames.getOrNull(1) ?: ""
@@ -143,7 +139,6 @@ class ProfileViewModel(private val repository: StudentRepository) : ViewModel() 
                 numberOfSiblings = student.numberOfSiblings.toString()
                 familyAnnualIncome = student.familyAnnualIncome.toString()
 
-                // Guardian
                 val gNames = student.guardiansName.split(" ")
                 guardianFirstName = gNames.getOrNull(0) ?: ""
                 guardianMiddleName = gNames.getOrNull(1) ?: ""
@@ -151,7 +146,6 @@ class ProfileViewModel(private val repository: StudentRepository) : ViewModel() 
                 relationToGuardian = student.relationToGuardian
                 guardianContactNumber = student.guardiansContactNumber
                 
-                // Determine if parent is guardian
                 isFatherGuardian = student.guardiansName == student.fathersName
                 isMotherGuardian = student.guardiansName == student.mothersName
 

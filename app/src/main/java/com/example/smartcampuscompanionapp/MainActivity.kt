@@ -32,8 +32,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.core.content.edit
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import com.example.smartcampuscompanionapp.data.local.AppDatabase
 import com.example.smartcampuscompanionapp.data.repository.AnnouncementRepository
 import com.example.smartcampuscompanionapp.data.repository.StudentRepository
@@ -54,8 +52,8 @@ import com.example.smartcampuscompanionapp.ui.viewmodel.LoginViewModelFactory
 import com.example.smartcampuscompanionapp.ui.student.ProfileScreen
 import com.example.smartcampuscompanionapp.ui.viewmodel.ProfileViewModel
 import com.example.smartcampuscompanionapp.ui.viewmodel.ProfileViewModelFactory
-import com.example.smartcampuscompanionapp.ui.schedule.ScheduleScreen
-import com.example.smartcampuscompanionapp.ui.schedule.Task
+import com.example.smartcampuscompanionapp.ui.student.ScheduleScreen
+import com.example.smartcampuscompanionapp.ui.student.Task
 import com.example.smartcampuscompanionapp.ui.settings.SettingsScreen
 import com.example.smartcampuscompanionapp.ui.theme.SmartCampusCompanionAppTheme
 

@@ -1,7 +1,7 @@
 package com.example.smartcampuscompanionapp.data.repository
 
-import com.example.smartcampuscompanionapp.data.local.db.Announcement
-import com.example.smartcampuscompanionapp.data.local.db.AnnouncementDao
+import com.example.smartcampuscompanionapp.data.local.dao.AnnouncementDao
+import com.example.smartcampuscompanionapp.data.local.entities.Announcement
 import kotlinx.coroutines.flow.Flow
 
 class AnnouncementRepository(private val announcementDao: AnnouncementDao) {
@@ -11,8 +11,8 @@ class AnnouncementRepository(private val announcementDao: AnnouncementDao) {
         announcementDao.insertAnnouncement(announcement)
     }
 
-    suspend fun markAsRead(id: Int) {
-        announcementDao.markAsRead(id, true)
+    suspend fun update(announcement: Announcement) {
+        announcementDao.updateAnnouncement(announcement)
     }
 
     suspend fun delete(announcement: Announcement) {

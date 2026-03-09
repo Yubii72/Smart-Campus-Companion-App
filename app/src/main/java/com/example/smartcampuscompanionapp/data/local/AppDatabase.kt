@@ -103,7 +103,25 @@ abstract class AppDatabase : RoomDatabase() {
             lastSchoolAttended = "City High School",
             lastYearAttended = "2023",
             learnerReferenceNumber = "123456789012",
-            honorsReceived = "With Honors"
+            honorsReceived = "With Honors",
+            fathersName = "",
+            fathersOccupation = "",
+            fathersDateOfBirth = "",
+            fathersSexAtBirth = "",
+            mothersName = "",
+            mothersOccupation = "",
+            mothersDateOfBirth = "",
+            mothersSexAtBirth = "",
+            numberOfSiblings = 0,
+            familyAnnualIncome = 0.0,
+            guardiansName = "",
+            relationToGuardian = "",
+            guardiansContactNumber = "",
+            college = "",
+            program = "",
+            curriculum = "",
+            yearLevel = "",
+            section = ""
         )
     }
 }

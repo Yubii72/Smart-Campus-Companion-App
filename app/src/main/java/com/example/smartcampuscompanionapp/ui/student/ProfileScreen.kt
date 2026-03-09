@@ -1,7 +1,6 @@
-package com.example.smartcampuscompanionapp.ui.profile
+package com.example.smartcampuscompanionapp.ui.student
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -22,26 +21,19 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.smartcampuscompanionapp.R
-import com.example.smartcampuscompanionapp.data.local.AppDatabase
-import com.example.smartcampuscompanionapp.data.repository.StudentRepository
-import com.example.smartcampuscompanionapp.ui.theme.SmartCampusCompanionAppTheme
-import androidx.compose.ui.platform.LocalContext
+import com.example.smartcampuscompanionapp.ui.viewmodel.ProfileViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen(
     studentNumber: String,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    viewModel: ProfileViewModel,
+    showBackButton: Boolean = true,
+    onSettingsClick: () -> Unit = {}
 ) {
-    val context = LocalContext.current
-    val database = AppDatabase.getDatabase(context)
-    val repository = StudentRepository(database.studentDao())
-    val viewModel: ProfileViewModel = viewModel(factory = ProfileViewModelFactory(repository))
-
     // Load profile data when screen opens
     LaunchedEffect(studentNumber) {
         viewModel.loadProfile(studentNumber)
@@ -60,12 +52,17 @@ fun ProfileScreen(
             TopAppBar(
                 title = { Text("Profile") },
                 navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                    if (showBackButton) {
+                        IconButton(onClick = onBack) {
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        }
                     }
                 },
                 actions = {
                     if (!viewModel.isEditMode) {
+                        IconButton(onClick = onSettingsClick) {
+                            Icon(Icons.Default.Settings, contentDescription = "Settings")
+                        }
                         Button(
                             onClick = { viewModel.isEditMode = true },
                             colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)

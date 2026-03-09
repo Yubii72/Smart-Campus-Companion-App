@@ -118,7 +118,25 @@ fun RegisterScreen(
                             lastSchoolAttended = "",
                             lastYearAttended = "",
                             learnerReferenceNumber = "",
-                            honorsReceived = ""
+                            honorsReceived = "",
+                            fathersName = "",
+                            fathersOccupation = "",
+                            fathersDateOfBirth = "",
+                            fathersSexAtBirth = "",
+                            mothersName = "",
+                            mothersOccupation = "",
+                            mothersDateOfBirth = "",
+                            mothersSexAtBirth = "",
+                            numberOfSiblings = 0,
+                            familyAnnualIncome = 0.0,
+                            guardiansName = "",
+                            relationToGuardian = "",
+                            guardiansContactNumber = "",
+                            college = "",
+                            program = "",
+                            curriculum = "",
+                            yearLevel = "",
+                            section = ""
                         )
                         viewModel.register(newStudent)
                         onRegisterSuccess()

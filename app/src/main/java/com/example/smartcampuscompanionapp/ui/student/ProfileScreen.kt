@@ -6,6 +6,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -22,27 +23,19 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.smartcampuscompanionapp.R
-import com.example.smartcampuscompanionapp.data.local.AppDatabase
-import com.example.smartcampuscompanionapp.data.repository.StudentRepository
-import com.example.smartcampuscompanionapp.ui.theme.SmartCampusCompanionAppTheme
-import androidx.compose.ui.platform.LocalContext
 import com.example.smartcampuscompanionapp.ui.viewmodel.ProfileViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen(
     studentNumber: String,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    viewModel: ProfileViewModel,
+    showBackButton: Boolean = true,
+    onSettingsClick: (() -> Unit)? = null
 ) {
-    val context = LocalContext.current
-    val database = AppDatabase.getDatabase(context)
-    val repository = StudentRepository(database.studentDao())
-    val viewModel: ProfileViewModel = viewModel(factory = ProfileViewModelFactory(repository))
-
     LaunchedEffect(studentNumber) {
         viewModel.loadProfile(studentNumber)
     }
@@ -58,29 +51,47 @@ fun ProfileScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Profile") },
+                title = {
+                    Text(
+                        "Profile",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold
+                    )
+                },
                 navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                    if (showBackButton) {
+                        IconButton(onClick = onBack) {
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        }
                     }
                 },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                ),
                 actions = {
-                    if (!viewModel.isEditMode) {
-                        Button(
-                            onClick = { viewModel.isEditMode = true },
-                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
-                        ) {
-                            Icon(Icons.Default.Edit, contentDescription = null, modifier = Modifier.size(18.dp))
-                            Spacer(Modifier.width(8.dp))
-                            Text("Edit Detail")
+                    if (onSettingsClick != null) {
+                        IconButton(onClick = onSettingsClick) {
+                            Icon(Icons.Default.Settings, contentDescription = "Settings")
                         }
-                    } else {
+                    }
+                    if (viewModel.isEditMode) {
                         TextButton(onClick = { viewModel.saveProfile() }) {
                             Text("Save", fontWeight = FontWeight.Bold)
                         }
                     }
                 }
             )
+        },
+        floatingActionButton = {
+            if (!viewModel.isEditMode) {
+                FloatingActionButton(
+                    onClick = { viewModel.isEditMode = true },
+                    modifier = Modifier.padding(bottom = 80.dp) // Adjust padding to be above navigation bar
+                ) {
+                    Icon(Icons.Default.Edit, contentDescription = "Edit Detail")
+                }
+            }
         }
     ) { paddingValues ->
         Column(
@@ -120,58 +131,7 @@ fun ProfileScreen(
             }
 
             if (!viewModel.isEditMode) {
-                OverviewSection(
-                    studentNumber = viewModel.studentNumber,
-                    sexAtBirth = viewModel.sexAtBirth,
-                    civilStatus = viewModel.civilStatus,
-                    residency = viewModel.residency,
-                    nationality = viewModel.nationality,
-                    religion = viewModel.religion,
-                    dateOfBirth = viewModel.dateOfBirth,
-                    placeOfBirth = viewModel.placeOfBirth,
-                    presentProvince = viewModel.presentProvince,
-                    presentZIP = viewModel.presentZip,
-                    presentCity = viewModel.presentCity,
-                    presentBarangay = viewModel.presentBarangay,
-                    presentHouse = viewModel.presentHouse,
-                    permanentProvince = viewModel.permanentProvince,
-                    permanentZIP = viewModel.permanentZip,
-                    permanentCity = viewModel.permanentCity,
-                    permanentBarangay = viewModel.permanentBarangay,
-                    permanentHouse = viewModel.permanentHouse,
-                    primaryMobileNumber = viewModel.primaryMobileNumber,
-                    alternateMobileNumber = viewModel.alternateMobileNumber,
-                    primaryEmailAddress = viewModel.primaryEmailAddress,
-                    alternateEmailAddress = viewModel.alternateEmailAddress,
-                    fatherFirstName = viewModel.fatherFirstName,
-                    fatherMiddleName = viewModel.fatherMiddleName,
-                    fatherLastName = viewModel.fatherLastName,
-                    fatherOccupation = viewModel.fatherOccupation,
-                    fatherDateOfBirth = viewModel.fatherDateOfBirth,
-                    fatherSexAtBirth = viewModel.fatherSexAtBirth,
-                    motherFirstName = viewModel.motherFirstName,
-                    motherMiddleName = viewModel.motherMiddleName,
-                    motherLastName = viewModel.motherLastName,
-                    motherOccupation = viewModel.motherOccupation,
-                    motherDateOfBirth = viewModel.motherDateOfBirth,
-                    motherSexAtBirth = viewModel.motherSexAtBirth,
-                    numberOfSiblings = viewModel.numberOfSiblings,
-                    familyAnnualIncome = viewModel.familyAnnualIncome,
-                    guardianFirstName = viewModel.guardianFirstName,
-                    guardianMiddleName = viewModel.guardianMiddleName,
-                    guardianLastName = viewModel.guardianLastName,
-                    relationToGuardian = viewModel.relationToGuardian,
-                    guardianContactNumber = viewModel.guardianContactNumber,
-                    lastSchoolAttended = viewModel.lastSchoolAttended,
-                    lastYearAttended = viewModel.lastYearAttended,
-                    learnerReferenceNumber = viewModel.learnerReferenceNumber,
-                    honorsReceived = viewModel.honorsReceived,
-                    college = viewModel.college,
-                    program = viewModel.program,
-                    curriculum = viewModel.curriculum,
-                    yearLevel = viewModel.yearLevel,
-                    section = viewModel.section
-                )
+                OverviewSection(viewModel)
             } else {
                 EditSection(viewModel)
             }
@@ -180,67 +140,91 @@ fun ProfileScreen(
 }
 
 @Composable
-fun OverviewSection(
-    studentNumber: String, sexAtBirth: String, civilStatus: String, residency: String,
-    nationality: String, religion: String, dateOfBirth: String, placeOfBirth: String,
-    presentProvince: String, presentZIP: String, presentCity: String, presentBarangay: String, presentHouse: String,
-    permanentProvince: String, permanentZIP: String, permanentCity: String, permanentBarangay: String, permanentHouse: String,
-    primaryMobileNumber: String, alternateMobileNumber: String, primaryEmailAddress: String,
-    alternateEmailAddress: String, fatherFirstName: String, fatherMiddleName: String,
-    fatherLastName: String, fatherOccupation: String, fatherDateOfBirth: String,
-    fatherSexAtBirth: String, motherFirstName: String, motherMiddleName: String,
-    motherLastName: String, motherOccupation: String, motherDateOfBirth: String,
-    motherSexAtBirth: String, numberOfSiblings: String, familyAnnualIncome: String,
-    guardianFirstName: String, guardianMiddleName: String, guardianLastName: String,
-    relationToGuardian: String, guardianContactNumber: String, lastSchoolAttended: String,
-    lastYearAttended: String, learnerReferenceNumber: String, honorsReceived: String,
-    college: String, program: String, curriculum: String, yearLevel: String, section: String
+fun OverviewDetailCard(
+    title: String,
+    content: @Composable () -> Unit
 ) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 6.dp),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.labelLarge,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.padding(bottom = 12.dp)
+            )
+            content()
+        }
+    }
+}
+
+@Composable
+fun OverviewSection(viewModel: ProfileViewModel) {
     Column(modifier = Modifier.fillMaxWidth()) {
-        OverviewDetail("Student Number", studentNumber)
-        OverviewDetail("Sex at Birth", sexAtBirth)
-        OverviewDetail("Civil Status", civilStatus)
-        OverviewDetail("Residency", residency)
-        OverviewDetail("Nationality", nationality)
-        OverviewDetail("Religion", religion)
-        OverviewDetail("Date of Birth", dateOfBirth)
-        OverviewDetail("Place of Birth", placeOfBirth)
+        ProfileSectionHeader("Personal Information", Icons.Default.Person)
+        OverviewDetailCard("Basic Info") {
+            OverviewDetail("First Name", viewModel.firstName)
+            OverviewDetail("Last Name", viewModel.lastName)
+            OverviewDetail("Student Number", viewModel.studentNumber)
+            OverviewDetail("Sex at Birth", viewModel.sexAtBirth)
+            OverviewDetail("Civil Status", viewModel.civilStatus)
+            OverviewDetail("Residency", viewModel.residency)
+            OverviewDetail("Nationality", viewModel.nationality)
+            OverviewDetail("Religion", viewModel.religion)
+            OverviewDetail("Date of Birth", viewModel.dateOfBirth)
+            OverviewDetail("Place of Birth", viewModel.placeOfBirth)
+        }
 
-        ProfileSectionHeader("Contact Information", null)
-        OverviewDetail("Present Address", "$presentHouse $presentBarangay, $presentCity, $presentProvince")
-        OverviewDetail("Permanent Address", "$permanentHouse $permanentBarangay, $permanentCity, $permanentProvince")
-        OverviewDetail("Primary Mobile Number", primaryMobileNumber)
-        OverviewDetail("Alternate Mobile Number", alternateMobileNumber)
-        OverviewDetail("Primary Email Address", primaryEmailAddress)
-        OverviewDetail("Alternate Email Address", alternateEmailAddress)
+        ProfileSectionHeader("Contact Information", Icons.Default.ContactPhone)
+        OverviewDetailCard("Addresses & Contact") {
+            OverviewDetail("Present Address", "${viewModel.presentHouse} ${viewModel.presentBarangay}, ${viewModel.presentCity}, ${viewModel.presentProvince}")
+            OverviewDetail("Permanent Address", "${viewModel.permanentHouse} ${viewModel.permanentBarangay}, ${viewModel.permanentCity}, ${viewModel.permanentProvince}")
+            OverviewDetail("Primary Mobile Number", viewModel.primaryMobileNumber)
+            OverviewDetail("Alternate Mobile Number", viewModel.alternateMobileNumber)
+            OverviewDetail("Primary Email Address", viewModel.primaryEmailAddress)
+            OverviewDetail("Alternate Email Address", viewModel.alternateEmailAddress)
+        }
 
-        ProfileSectionHeader("Family Background", null)
-        OverviewDetail("Father's Name", "$fatherFirstName $fatherMiddleName $fatherLastName")
-        OverviewDetail("Father's Occupation", fatherOccupation)
-        OverviewDetail("Father's Date of Birth", fatherDateOfBirth)
-        OverviewDetail("Father's Sex at Birth", fatherSexAtBirth)
-        OverviewDetail("Mother's Name", "$motherFirstName $motherMiddleName $motherLastName")
-        OverviewDetail("Mother's Occupation", motherOccupation)
-        OverviewDetail("Mother's Date of Birth", motherDateOfBirth)
-        OverviewDetail("Mother's Sex at Birth", motherSexAtBirth)
-        OverviewDetail("Number of Siblings", numberOfSiblings)
-        OverviewDetail("Family's Annual Income", "Php ${"%,.2f".format(familyAnnualIncome.toDoubleOrNull() ?: 0.0)} (Php ${"%,.2f".format((familyAnnualIncome.toDoubleOrNull() ?: 0.0) / 12)} per month)")
-        OverviewDetail("Guardian's Name", "$guardianFirstName $guardianMiddleName $guardianLastName")
-        OverviewDetail("Relation to Guardian", relationToGuardian)
-        OverviewDetail("Guardian's Contact Number", guardianContactNumber)
+        ProfileSectionHeader("Family Background", Icons.Default.Groups)
+        OverviewDetailCard("Family") {
+            OverviewDetail("Father's Name", "${viewModel.fatherFirstName} ${viewModel.fatherMiddleName} ${viewModel.fatherLastName}")
+            OverviewDetail("Father's Occupation", viewModel.fatherOccupation)
+            OverviewDetail("Father's Date of Birth", viewModel.fatherDateOfBirth)
+            OverviewDetail("Father's Sex at Birth", viewModel.fatherSexAtBirth)
+            OverviewDetail("Mother's Name", "${viewModel.motherFirstName} ${viewModel.motherMiddleName} ${viewModel.motherLastName}")
+            OverviewDetail("Mother's Occupation", viewModel.motherOccupation)
+            OverviewDetail("Mother's Date of Birth", viewModel.motherDateOfBirth)
+            OverviewDetail("Mother's Sex at Birth", viewModel.motherSexAtBirth)
+            OverviewDetail("Number of Siblings", viewModel.numberOfSiblings)
+            OverviewDetail("Family's Annual Income", "Php ${"%,.2f".format(viewModel.familyAnnualIncome.toDoubleOrNull() ?: 0.0)} (Php ${"%,.2f".format((viewModel.familyAnnualIncome.toDoubleOrNull() ?: 0.0) / 12)} per month)")
+            OverviewDetail("Guardian's Name", "${viewModel.guardianFirstName} ${viewModel.guardianMiddleName} ${viewModel.guardianLastName}")
+            OverviewDetail("Relation to Guardian", viewModel.relationToGuardian)
+            OverviewDetail("Guardian's Contact Number", viewModel.guardianContactNumber)
+        }
 
-        ProfileSectionHeader("Educational Background", null)
-        OverviewDetail("Last School Attended", lastSchoolAttended)
-        OverviewDetail("Last Year Attended", lastYearAttended)
-        OverviewDetail("Learner Reference Number", learnerReferenceNumber)
-        OverviewDetail("Honor/s Received", honorsReceived)
+        ProfileSectionHeader("Educational Background", Icons.Default.School)
+        OverviewDetailCard("Education") {
+            OverviewDetail("Last School Attended", viewModel.lastSchoolAttended)
+            OverviewDetail("Last Year Attended", viewModel.lastYearAttended)
+            OverviewDetail("Learner Reference Number", viewModel.learnerReferenceNumber)
+            OverviewDetail("Honor/s Received", viewModel.honorsReceived)
+        }
 
-        ProfileSectionHeader("Enrollment Details", null)
-        OverviewDetail("College", college)
-        OverviewDetail("Program", program)
-        OverviewDetail("Curriculum", curriculum)
-        OverviewDetail("Year Level", yearLevel)
-        OverviewDetail("Section", section)
+        ProfileSectionHeader("Enrollment Details", Icons.Default.School)
+        OverviewDetailCard("Enrollment") {
+            OverviewDetail("College", viewModel.college)
+            OverviewDetail("Program", viewModel.program)
+            OverviewDetail("Curriculum", viewModel.curriculum)
+            OverviewDetail("Year Level", viewModel.yearLevel)
+            OverviewDetail("Section", viewModel.section)
+        }
     }
 }
 
@@ -351,8 +335,11 @@ fun ProfileSectionHeader(title: String, icon: ImageVector?) {
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 12.dp)
-            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
-            .padding(8.dp)
+            .background(
+                MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                RoundedCornerShape(12.dp)
+            )
+            .padding(12.dp)
     ) {
         if (icon != null) {
             Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
@@ -400,6 +387,7 @@ fun EditField(
         value = value,
         onValueChange = { if (isEditable) onValueChange(it) },
         label = { Text(label) },
+        shape = RoundedCornerShape(12.dp),
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 4.dp),

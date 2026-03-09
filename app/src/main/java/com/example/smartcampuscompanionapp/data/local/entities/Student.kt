@@ -7,10 +7,10 @@ import androidx.room.PrimaryKey
 data class Student(
     @PrimaryKey val studentNumber: String,
     val password: String,
-    val firstName: String,
-    val lastName: String,
     
     // Personal Information
+    val firstName: String,
+    val lastName: String,
     val sexAtBirth: String,
     val civilStatus: String,
     val residency: String,

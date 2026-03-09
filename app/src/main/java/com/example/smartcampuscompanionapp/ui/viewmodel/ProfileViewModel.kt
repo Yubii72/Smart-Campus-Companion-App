@@ -1,4 +1,4 @@
-package com.example.smartcampuscompanionapp.ui.profile
+package com.example.smartcampuscompanionapp.ui.viewmodel
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -20,7 +20,7 @@ class ProfileViewModel(private val repository: StudentRepository) : ViewModel() 
     var nameExtension by mutableStateOf("")
 
     var studentNumber by mutableStateOf("")
-    var password by mutableStateOf("") // Need this to preserve it during updates
+    var password by mutableStateOf("") 
     
     var sexAtBirth by mutableStateOf("")
     var civilStatus by mutableStateOf("")
@@ -105,17 +105,18 @@ class ProfileViewModel(private val repository: StudentRepository) : ViewModel() 
                 dateOfBirth = student.dateOfBirth
                 placeOfBirth = student.placeOfBirth
 
-                // Parse address components (assuming simple comma separation for now)
-                // For a production app, these would be separate columns in DB
-                presentHouse = student.presentAddress.split(", ").getOrNull(0) ?: ""
-                presentBarangay = student.presentAddress.split(", ").getOrNull(1) ?: ""
-                presentCity = student.presentAddress.split(", ").getOrNull(2) ?: ""
-                presentProvince = student.presentAddress.split(", ").getOrNull(3) ?: ""
+                // Parse addresses - ensuring we don't crash if format is unexpected
+                val presentParts = student.presentAddress.split(", ")
+                presentHouse = presentParts.getOrNull(0) ?: ""
+                presentBarangay = presentParts.getOrNull(1) ?: ""
+                presentCity = presentParts.getOrNull(2) ?: ""
+                presentProvince = presentParts.getOrNull(3) ?: ""
                 
-                permanentHouse = student.permanentAddress.split(", ").getOrNull(0) ?: ""
-                permanentBarangay = student.permanentAddress.split(", ").getOrNull(1) ?: ""
-                permanentCity = student.permanentAddress.split(", ").getOrNull(2) ?: ""
-                permanentProvince = student.permanentAddress.split(", ").getOrNull(3) ?: ""
+                val permanentParts = student.permanentAddress.split(", ")
+                permanentHouse = permanentParts.getOrNull(0) ?: ""
+                permanentBarangay = permanentParts.getOrNull(1) ?: ""
+                permanentCity = permanentParts.getOrNull(2) ?: ""
+                permanentProvince = permanentParts.getOrNull(3) ?: ""
 
                 primaryMobileNumber = student.primaryMobileNumber
                 alternateMobileNumber = student.alternateMobileNumber
@@ -151,9 +152,8 @@ class ProfileViewModel(private val repository: StudentRepository) : ViewModel() 
                 relationToGuardian = student.relationToGuardian
                 guardianContactNumber = student.guardiansContactNumber
                 
-                // Determine if parent is guardian
-                isFatherGuardian = student.guardiansName == student.fathersName
-                isMotherGuardian = student.guardiansName == student.mothersName
+                isFatherGuardian = student.guardiansName.isNotEmpty() && student.guardiansName == student.fathersName
+                isMotherGuardian = student.guardiansName.isNotEmpty() && student.guardiansName == student.mothersName
 
                 lastSchoolAttended = student.lastSchoolAttended
                 lastYearAttended = student.lastYearAttended
@@ -189,17 +189,17 @@ class ProfileViewModel(private val repository: StudentRepository) : ViewModel() 
                 alternateMobileNumber = alternateMobileNumber,
                 primaryEmailAddress = primaryEmailAddress,
                 alternateEmailAddress = alternateEmailAddress,
-                fathersName = "$fatherFirstName $fatherMiddleName $fatherLastName",
+                fathersName = "$fatherFirstName $fatherMiddleName $fatherLastName".trim(),
                 fathersOccupation = fatherOccupation,
                 fathersDateOfBirth = fatherDateOfBirth,
                 fathersSexAtBirth = fatherSexAtBirth,
-                mothersName = "$motherFirstName $motherMiddleName $motherLastName",
+                mothersName = "$motherFirstName $motherMiddleName $motherLastName".trim(),
                 mothersOccupation = motherOccupation,
                 mothersDateOfBirth = motherDateOfBirth,
                 mothersSexAtBirth = motherSexAtBirth,
                 numberOfSiblings = numberOfSiblings.toIntOrNull() ?: 0,
                 familyAnnualIncome = familyAnnualIncome.toDoubleOrNull() ?: 0.0,
-                guardiansName = "$guardianFirstName $guardianMiddleName $guardianLastName",
+                guardiansName = "$guardianFirstName $guardianMiddleName $guardianLastName".trim(),
                 relationToGuardian = relationToGuardian,
                 guardiansContactNumber = guardianContactNumber,
                 lastSchoolAttended = lastSchoolAttended,
@@ -244,7 +244,7 @@ class ProfileViewModel(private val repository: StudentRepository) : ViewModel() 
 }
 
 class ProfileViewModelFactory(private val repository: StudentRepository) : ViewModelProvider.Factory {
-    override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T {
+    override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(ProfileViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
             return ProfileViewModel(repository) as T

@@ -1,4 +1,4 @@
-package com.example.smartcampuscompanionapp.ui.dashboard
+package com.example.smartcampuscompanionapp.ui.student
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -11,23 +11,18 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.smartcampuscompanionapp.ui.campus_info.College
 import com.example.smartcampuscompanionapp.ui.campus_info.colleges
-import com.example.smartcampuscompanionapp.ui.schedule.Task
-import com.example.smartcampuscompanionapp.ui.theme.SmartCampusCompanionAppTheme
+import com.example.smartcampuscompanionapp.ui.viewmodel.AnnouncementViewModel
 
-// Placeholder progress data (UI only)
 data class SubjectProgress(
     val name: String,
     val description: String,
@@ -39,6 +34,7 @@ data class SubjectProgress(
 fun DashboardScreen(
     surname: String = "Student",
     upcomingTasks: List<Task> = emptyList(),
+    announcementViewModel: AnnouncementViewModel,
     onNavigateToAnnouncements: () -> Unit = {},
     onNavigateToTasks: () -> Unit = {},
     onNavigateToCampusInfo: () -> Unit = {},
@@ -47,6 +43,9 @@ fun DashboardScreen(
     onNavigateToSettings: () -> Unit = {},
     onNavigateToSchedule: () -> Unit = {}
 ) {
+    val announcements by announcementViewModel.allAnnouncements.collectAsState()
+    val hasUnreadAnnouncements = announcements.any { !it.isRead }
+    
     val subjectProgresses = listOf(
         SubjectProgress("Information Technology", "Programming & Systems", 0.75f),
         SubjectProgress("Computer Science", "Algorithms & Data Structures", 0.60f)
@@ -75,11 +74,20 @@ fun DashboardScreen(
                             contentDescription = "Settings"
                         )
                     }
-                    BadgedBox(
-                        badge = {
-                            Badge(modifier = Modifier.size(8.dp))
+                    if (hasUnreadAnnouncements) {
+                        BadgedBox(
+                            badge = {
+                                Badge(modifier = Modifier.size(8.dp))
+                            }
+                        ) {
+                            IconButton(onClick = onNavigateToAnnouncements) {
+                                Icon(
+                                    Icons.Default.Notifications,
+                                    contentDescription = "Campus Announcements"
+                                )
+                            }
                         }
-                    ) {
+                    } else {
                         IconButton(onClick = onNavigateToAnnouncements) {
                             Icon(
                                 Icons.Default.Notifications,
@@ -100,7 +108,6 @@ fun DashboardScreen(
         ) {
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Top section: Welcome and Stats
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(20.dp),
@@ -190,7 +197,6 @@ fun DashboardScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // My Progress Section
             SectionHeader("MY PROGRESS")
             Spacer(modifier = Modifier.height(12.dp))
             subjectProgresses.forEach { subject ->
@@ -205,7 +211,6 @@ fun DashboardScreen(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // My Tasks Section
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -263,7 +268,6 @@ fun DashboardScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Campus Information Preview
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -423,13 +427,5 @@ private fun CampusPreviewCard(
                 lineHeight = 14.sp
             )
         }
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun DashboardScreenPreview() {
-    SmartCampusCompanionAppTheme {
-        DashboardScreen(surname = "Irang")
     }
 }

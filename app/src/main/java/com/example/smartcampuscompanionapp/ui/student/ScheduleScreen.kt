@@ -1,4 +1,4 @@
-package com.example.smartcampuscompanionapp.ui.schedule
+package com.example.smartcampuscompanionapp.ui.student
 
 // Import for Time Picker dialog
 import android.app.DatePickerDialog
@@ -329,9 +329,9 @@ fun TaskDialog(
     var description by remember { mutableStateOf(task?.description ?: "") }
 
     val context = LocalContext.current
-    val calendar = remember { java.util.Calendar.getInstance() }
+    val calendar = remember { Calendar.getInstance() }
     val (initYear, initMonth, initDay) = remember(dueDate) {
-        val cal = java.util.Calendar.getInstance()
+        val cal = Calendar.getInstance()
         if (dueDate.isNotBlank()) {
             try {
                 SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse(dueDate)?.let {
@@ -339,7 +339,7 @@ fun TaskDialog(
                 }
             } catch (_: Exception) { }
         }
-        Triple(cal.get(java.util.Calendar.YEAR), cal.get(java.util.Calendar.MONTH), cal.get(java.util.Calendar.DAY_OF_MONTH))
+        Triple(cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH))
     }
     val datePickerDialog = remember(initYear, initMonth, initDay) {
         DatePickerDialog(

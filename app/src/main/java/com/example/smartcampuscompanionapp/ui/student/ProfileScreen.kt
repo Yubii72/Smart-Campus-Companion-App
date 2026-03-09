@@ -1,12 +1,10 @@
-package com.example.smartcampuscompanionapp.ui.profile
+package com.example.smartcampuscompanionapp.ui.student
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -23,13 +21,9 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.smartcampuscompanionapp.R
-import com.example.smartcampuscompanionapp.data.local.AppDatabase
-import com.example.smartcampuscompanionapp.data.repository.StudentRepository
-import com.example.smartcampuscompanionapp.ui.theme.SmartCampusCompanionAppTheme
-import androidx.compose.ui.platform.LocalContext
+import com.example.smartcampuscompanionapp.ui.viewmodel.ProfileViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -38,12 +32,8 @@ fun ProfileScreen(
     onBack: () -> Unit,
     viewModel: ProfileViewModel,
     showBackButton: Boolean = true,
-    onSettingsClick: (() -> Unit)? = null
+    onSettingsClick: () -> Unit = {}
 ) {
-    val context = LocalContext.current
-    val database = AppDatabase.getDatabase(context)
-    val repository = StudentRepository(database.studentDao())
-
     // Load profile data when screen opens
     LaunchedEffect(studentNumber) {
         viewModel.loadProfile(studentNumber)
@@ -60,13 +50,7 @@ fun ProfileScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = {
-                    Text(
-                        "Profile",
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold
-                    )
-                },
+                title = { Text("Profile") },
                 navigationIcon = {
                     if (showBackButton) {
                         IconButton(onClick = onBack) {
@@ -74,17 +58,11 @@ fun ProfileScreen(
                         }
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                ),
                 actions = {
-                    if (onSettingsClick != null) {
+                    if (!viewModel.isEditMode) {
                         IconButton(onClick = onSettingsClick) {
                             Icon(Icons.Default.Settings, contentDescription = "Settings")
                         }
-                    }
-                    if (!viewModel.isEditMode) {
                         Button(
                             onClick = { viewModel.isEditMode = true },
                             colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
@@ -142,8 +120,6 @@ fun ProfileScreen(
             if (!viewModel.isEditMode) {
                 // OVERVIEW MODE
                 OverviewSection(
-                    firstName = viewModel.firstName,
-                    lastName = viewModel.lastName,
                     studentNumber = viewModel.studentNumber,
                     sexAtBirth = viewModel.sexAtBirth,
                     civilStatus = viewModel.civilStatus,
@@ -204,34 +180,8 @@ fun ProfileScreen(
 }
 
 @Composable
-fun OverviewDetailCard(
-    title: String,
-    content: @Composable () -> Unit
-) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 6.dp),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
-    ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Text(
-                text = title,
-                style = MaterialTheme.typography.labelLarge,
-                fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.padding(bottom = 12.dp)
-            )
-            content()
-        }
-    }
-}
-
-@Composable
 fun OverviewSection(
-    firstName: String, lastName: String, studentNumber: String, sexAtBirth: String, civilStatus: String, residency: String,
+    studentNumber: String, sexAtBirth: String, civilStatus: String, residency: String,
     nationality: String, religion: String, dateOfBirth: String, placeOfBirth: String,
     presentProvince: String, presentZIP: String, presentCity: String, presentBarangay: String, presentHouse: String,
     permanentProvince: String, permanentZIP: String, permanentCity: String, permanentBarangay: String, permanentHouse: String,
@@ -247,32 +197,24 @@ fun OverviewSection(
     college: String, program: String, curriculum: String, yearLevel: String, section: String
 ) {
     Column(modifier = Modifier.fillMaxWidth()) {
-        ProfileSectionHeader("Personal Information", Icons.Default.Person)
-        OverviewDetailCard("Basic Info") {
-            OverviewDetail("First Name", firstName)
-            OverviewDetail("Last Name", lastName)
-            OverviewDetail("Student Number", studentNumber)
-            OverviewDetail("Sex at Birth", sexAtBirth)
-            OverviewDetail("Civil Status", civilStatus)
-            OverviewDetail("Residency", residency)
-            OverviewDetail("Nationality", nationality)
-            OverviewDetail("Religion", religion)
-            OverviewDetail("Date of Birth", dateOfBirth)
-            OverviewDetail("Place of Birth", placeOfBirth)
-        }
+        OverviewDetail("Student Number", studentNumber)
+        OverviewDetail("Sex at Birth", sexAtBirth)
+        OverviewDetail("Civil Status", civilStatus)
+        OverviewDetail("Residency", residency)
+        OverviewDetail("Nationality", nationality)
+        OverviewDetail("Religion", religion)
+        OverviewDetail("Date of Birth", dateOfBirth)
+        OverviewDetail("Place of Birth", placeOfBirth)
 
-        ProfileSectionHeader("Contact Information", Icons.Default.ContactPhone)
-        OverviewDetailCard("Addresses & Contact") {
+        ProfileSectionHeader("Contact Information", null)
         OverviewDetail("Present Address", "$presentHouse $presentBarangay, $presentCity, $presentProvince")
         OverviewDetail("Permanent Address", "$permanentHouse $permanentBarangay, $permanentCity, $permanentProvince")
         OverviewDetail("Primary Mobile Number", primaryMobileNumber)
         OverviewDetail("Alternate Mobile Number", alternateMobileNumber)
         OverviewDetail("Primary Email Address", primaryEmailAddress)
         OverviewDetail("Alternate Email Address", alternateEmailAddress)
-        }
 
-        ProfileSectionHeader("Family Background", Icons.Default.Groups)
-        OverviewDetailCard("Family") {
+        ProfileSectionHeader("Family Background", null)
         OverviewDetail("Father's Name", "$fatherFirstName $fatherMiddleName $fatherLastName")
         OverviewDetail("Father's Occupation", fatherOccupation)
         OverviewDetail("Father's Date of Birth", fatherDateOfBirth)
@@ -286,24 +228,19 @@ fun OverviewSection(
         OverviewDetail("Guardian's Name", "$guardianFirstName $guardianMiddleName $guardianLastName")
         OverviewDetail("Relation to Guardian", relationToGuardian)
         OverviewDetail("Guardian's Contact Number", guardianContactNumber)
-        }
 
-        ProfileSectionHeader("Educational Background", Icons.Default.School)
-        OverviewDetailCard("Education") {
+        ProfileSectionHeader("Educational Background", null)
         OverviewDetail("Last School Attended", lastSchoolAttended)
         OverviewDetail("Last Year Attended", lastYearAttended)
         OverviewDetail("Learner Reference Number", learnerReferenceNumber)
         OverviewDetail("Honor/s Received", honorsReceived)
-        }
 
-        ProfileSectionHeader("Enrollment Details", Icons.Default.School)
-        OverviewDetailCard("Enrollment") {
+        ProfileSectionHeader("Enrollment Details", null)
         OverviewDetail("College", college)
         OverviewDetail("Program", program)
         OverviewDetail("Curriculum", curriculum)
         OverviewDetail("Year Level", yearLevel)
         OverviewDetail("Section", section)
-        }
     }
 }
 
@@ -336,7 +273,7 @@ fun EditSection(viewModel: ProfileViewModel) {
         EditField("Province *", viewModel.permanentProvince, { viewModel.permanentProvince = it })
         EditField("City / Municipality *", viewModel.permanentCity, { viewModel.permanentCity = it })
         EditField("Barangay *", viewModel.permanentBarangay, { viewModel.permanentBarangay = it })
-        EditField("House Number / Street / Subdivision / Sitio *", viewModel.permanentHouse, { viewModel.permanentHouse = it })
+        EditField("House Number / Street / Subdivision / String *", viewModel.permanentHouse, { viewModel.permanentHouse = it })
         EditField("ZIP Code *", viewModel.permanentZip, { viewModel.permanentZip = it }, keyboardType = KeyboardType.Number)
 
         ProfileSectionHeader("Contact Information", Icons.Default.ContactPhone)
@@ -363,7 +300,7 @@ fun EditSection(viewModel: ProfileViewModel) {
         EditField("First Name *", viewModel.motherFirstName, { viewModel.motherFirstName = it })
         EditField("Middle Name *", viewModel.motherMiddleName, { viewModel.motherMiddleName = it })
         EditField("Last Name *", viewModel.motherLastName, { viewModel.motherLastName = it })
-
+        
         Row(verticalAlignment = Alignment.CenterVertically) {
             Checkbox(checked = viewModel.isMotherGuardian, onCheckedChange = { viewModel.isMotherGuardian = it })
             Text("Guardian")
@@ -373,84 +310,51 @@ fun EditSection(viewModel: ProfileViewModel) {
         EditField("Date of Birth *", viewModel.motherDateOfBirth, { viewModel.motherDateOfBirth = it })
         EditField("Occupation *", viewModel.motherOccupation, { viewModel.motherOccupation = it })
 
-        ProfileSectionHeader("Family Background", Icons.Default.Groups)
+        ProfileSectionHeader("Other Information", Icons.Default.MoreVert)
         EditField("Number of Siblings *", viewModel.numberOfSiblings, { viewModel.numberOfSiblings = it }, keyboardType = KeyboardType.Number)
-        EditField("Family's Annual Income *", viewModel.familyAnnualIncome, { viewModel.familyAnnualIncome = it }, keyboardType = KeyboardType.Decimal)
+        EditField("Family's Annual Income *", viewModel.familyAnnualIncome, { viewModel.familyAnnualIncome = it }, keyboardType = KeyboardType.Number)
 
-        ProfileSectionHeader("Guardian's Information", Icons.Default.Shield)
-        EditField("First Name *", viewModel.guardianFirstName, { 
-            viewModel.guardianFirstName = it 
-            viewModel.onGuardianManualEdit()
-        })
-        EditField("Middle Name *", viewModel.guardianMiddleName, { 
-            viewModel.guardianMiddleName = it 
-            viewModel.onGuardianManualEdit()
-        })
-        EditField("Last Name *", viewModel.guardianLastName, { 
-            viewModel.guardianLastName = it 
-            viewModel.onGuardianManualEdit()
-        })
-        EditField("Relationship to the Student *", viewModel.relationToGuardian, { 
-            viewModel.relationToGuardian = it 
-            viewModel.onGuardianManualEdit()
-        })
-        EditField("Contact Number *", viewModel.guardianContactNumber, { 
-            viewModel.guardianContactNumber = it 
-            viewModel.onGuardianManualEdit()
-        })
+        ProfileSectionHeader("Guardian's Information", Icons.Default.SupervisorAccount)
+        EditField("First Name *", viewModel.guardianFirstName, { viewModel.guardianFirstName = it; viewModel.onGuardianManualEdit() })
+        EditField("Middle Name *", viewModel.guardianMiddleName, { viewModel.guardianMiddleName = it; viewModel.onGuardianManualEdit() })
+        EditField("Last Name *", viewModel.guardianLastName, { viewModel.guardianLastName = it; viewModel.onGuardianManualEdit() })
+        EditField("Relation to Guardian *", viewModel.relationToGuardian, { viewModel.relationToGuardian = it; viewModel.onGuardianManualEdit() })
+        EditField("Guardian's Contact Number *", viewModel.guardianContactNumber, { viewModel.guardianContactNumber = it })
 
         ProfileSectionHeader("Educational Background", Icons.Default.School)
         EditField("Last School Attended *", viewModel.lastSchoolAttended, { viewModel.lastSchoolAttended = it })
-        EditField("Last Year Attended *", viewModel.lastYearAttended, { viewModel.lastYearAttended = it }, keyboardType = KeyboardType.Number)
-        EditField("Learner Reference Number *", viewModel.learnerReferenceNumber, { viewModel.learnerReferenceNumber = it }, keyboardType = KeyboardType.Number)
+        EditField("Last Year Attended *", viewModel.lastYearAttended, { viewModel.lastYearAttended = it })
+        EditField("Learner Reference Number *", viewModel.learnerReferenceNumber, { viewModel.learnerReferenceNumber = it })
         EditField("Honor/s Received", viewModel.honorsReceived, { viewModel.honorsReceived = it })
+
+        ProfileSectionHeader("Enrollment Details", Icons.Default.Assignment)
+        EditField("College", viewModel.college, { viewModel.college = it }, isEditable = false)
+        EditField("Program", viewModel.program, { viewModel.program = it }, isEditable = false)
+        EditField("Curriculum", viewModel.curriculum, { viewModel.curriculum = it }, isEditable = false)
+        EditField("Year Level", viewModel.yearLevel, { viewModel.yearLevel = it }, isEditable = false)
+        EditField("Section", viewModel.section, { viewModel.section = it }, isEditable = false)
     }
 }
 
 @Composable
 fun ProfileSectionHeader(title: String, icon: ImageVector?) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 12.dp)
-            .background(
-                MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-                RoundedCornerShape(12.dp)
-            )
-            .padding(12.dp)
-    ) {
-        if (icon != null) {
-            Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
-            Spacer(Modifier.width(8.dp))
+    Column(modifier = Modifier.padding(top = 24.dp, bottom = 8.dp)) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            if (icon != null) {
+                Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
+                Spacer(Modifier.width(8.dp))
+            }
+            Text(title, style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
         }
-        Text(
-            text = title,
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.primary
-        )
+        HorizontalDivider(modifier = Modifier.padding(top = 4.dp), color = MaterialTheme.colorScheme.outlineVariant)
     }
 }
 
 @Composable
 fun OverviewDetail(label: String, value: String) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 6.dp)
-    ) {
-        Text(
-            text = label,
-            style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-        Text(
-            text = value,
-            style = MaterialTheme.typography.bodyLarge,
-            fontWeight = FontWeight.Medium,
-            color = MaterialTheme.colorScheme.onSurface
-        )
+    Column(modifier = Modifier.padding(vertical = 8.dp)) {
+        Text(label, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.outline)
+        Text(value, style = MaterialTheme.typography.bodyLarge)
     }
 }
 
@@ -462,35 +366,17 @@ fun EditField(
     isEditable: Boolean = true,
     keyboardType: KeyboardType = KeyboardType.Text
 ) {
-    OutlinedTextField(
-        value = value,
-        onValueChange = { if (isEditable) onValueChange(it) },
-        label = { Text(label) },
-        shape = RoundedCornerShape(12.dp),
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 4.dp),
-        readOnly = !isEditable,
-        enabled = isEditable, // Graying out uneditable fields
-        colors = OutlinedTextFieldDefaults.colors(
-            disabledTextColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
-            disabledLabelColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
-            disabledBorderColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f),
-            disabledTrailingIconColor = Color.Red // Keeping the lock icon red
-        ),
-        trailingIcon = {
-            if (!isEditable) {
-                Icon(Icons.Default.Lock, contentDescription = "Locked")
-            }
-        },
-        keyboardOptions = KeyboardOptions(keyboardType = keyboardType)
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun ProfileScreenPreview() {
-    SmartCampusCompanionAppTheme {
-        // Mock Preview
+    Column(modifier = Modifier.padding(vertical = 8.dp)) {
+        Text(label, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.outline)
+        if (isEditable) {
+            OutlinedTextField(
+                value = value,
+                onValueChange = onValueChange,
+                modifier = Modifier.fillMaxWidth(),
+                keyboardOptions = KeyboardOptions(keyboardType = keyboardType)
+            )
+        } else {
+            Text(value, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(top = 4.dp))
+        }
     }
 }

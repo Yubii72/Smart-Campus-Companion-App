@@ -44,6 +44,7 @@ import com.example.smartcampuscompanionapp.ui.campus_info.College
 import com.example.smartcampuscompanionapp.ui.campus_info.CollegeInfoScreen
 import com.example.smartcampuscompanionapp.ui.campus_info.CollegeListScreen
 import com.example.smartcampuscompanionapp.ui.admin.AdminDashboardScreen
+import com.example.smartcampuscompanionapp.ui.admin.AdminLoginScreen
 import com.example.smartcampuscompanionapp.ui.student.DashboardScreen
 import com.example.smartcampuscompanionapp.ui.student.LoginScreen
 import com.example.smartcampuscompanionapp.ui.student.RegisterScreen
@@ -230,6 +231,7 @@ class MainActivity : ComponentActivity() {
                                                     when (tab) {
                                                         MainTab.Dashboard -> DashboardScreen(
                                                             upcomingTasks = tasks,
+                                                            announcementViewModel = announcementViewModel,
                                                             onNavigateToAnnouncements = {
                                                                 overlayScreen = "Announcements"
                                                             },
@@ -283,19 +285,34 @@ class MainActivity : ComponentActivity() {
                             onRegisterSuccess = { currentScreen = "Auth" },
                             onBack = { currentScreen = "Auth" }
                         )
+                        currentScreen == "AdminLogin" -> AdminLoginScreen(
+                            viewModel = loginViewModel,
+                            onLoginSuccess = { user, isAdm ->
+                                sharedPreferences.edit { 
+                                    putBoolean("is_logged_in", true) 
+                                    putBoolean("is_admin", true)
+                                    putString("student_number", user)
+                                }
+                                studentNumber = user
+                                isLoggedIn = true
+                                isAdmin = true
+                            },
+                            onBackToStudentLogin = { currentScreen = "Auth" }
+                        )
                         else -> LoginScreen(
                             viewModel = loginViewModel,
                             onLoginSuccess = { studentNum, isAdm ->
                                 sharedPreferences.edit { 
                                     putBoolean("is_logged_in", true) 
-                                    putBoolean("is_admin", isAdm)
+                                    putBoolean("is_admin", false)
                                     putString("student_number", studentNum)
                                 }
                                 studentNumber = studentNum
                                 isLoggedIn = true
-                                isAdmin = isAdm
+                                isAdmin = false
                             },
-                            onRegisterClick = { currentScreen = "Register" }
+                            onRegisterClick = { currentScreen = "Register" },
+                            onAdminLoginClick = { currentScreen = "AdminLogin" }
                         )
                     }
                 }

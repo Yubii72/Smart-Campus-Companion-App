@@ -15,6 +15,10 @@ class LoginViewModel(private val repository: StudentRepository) : ViewModel() {
     private val _uiState = MutableStateFlow<LoginUiState>(LoginUiState.Idle)
     val uiState: StateFlow<LoginUiState> = _uiState.asStateFlow()
 
+    // Hardcoded Admin Credentials
+    private val ADMIN_USERNAME = "admin"
+    private val ADMIN_PASSWORD = "admin123"
+
     fun login(studentNumber: String, password: String) {
         if (studentNumber.isBlank() || password.isBlank()) {
             _uiState.value = LoginUiState.Error("Please fill in all fields")
@@ -24,11 +28,18 @@ class LoginViewModel(private val repository: StudentRepository) : ViewModel() {
         _uiState.value = LoginUiState.Loading
 
         viewModelScope.launch {
+            // Check for hardcoded admin first
+            if (studentNumber.lowercase() == ADMIN_USERNAME && password == ADMIN_PASSWORD) {
+                _uiState.value = LoginUiState.Success
+                return@launch
+            }
+
+            // Otherwise, check the local database for students
             val student = repository.getStudentByNumber(studentNumber)
             if (student != null && student.password == password) {
                 _uiState.value = LoginUiState.Success
             } else {
-                _uiState.value = LoginUiState.Error("Invalid student number or password")
+                _uiState.value = LoginUiState.Error("Invalid username or password")
             }
         }
     }

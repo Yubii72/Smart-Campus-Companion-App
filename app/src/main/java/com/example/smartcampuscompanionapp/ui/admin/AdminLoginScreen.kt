@@ -1,4 +1,4 @@
-package com.example.smartcampuscompanionapp.ui.student
+package com.example.smartcampuscompanionapp.ui.admin
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -7,7 +7,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.School
+import androidx.compose.material.icons.filled.Security
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.*
@@ -24,11 +24,10 @@ import com.example.smartcampuscompanionapp.ui.viewmodel.LoginUiState
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LoginScreen(
+fun AdminLoginScreen(
     viewModel: LoginViewModel,
     onLoginSuccess: (String, Boolean) -> Unit,
-    onRegisterClick: () -> Unit,
-    onAdminLoginClick: () -> Unit
+    onBackToStudentLogin: () -> Unit
 ) {
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -38,7 +37,7 @@ fun LoginScreen(
 
     LaunchedEffect(uiState) {
         if (uiState is LoginUiState.Success) {
-            onLoginSuccess(username, false)
+            onLoginSuccess(username, true)
             viewModel.resetState()
         }
     }
@@ -56,14 +55,14 @@ fun LoginScreen(
         Surface(
             modifier = Modifier.size(96.dp),
             shape = RoundedCornerShape(24.dp),
-            color = MaterialTheme.colorScheme.primaryContainer
+            color = MaterialTheme.colorScheme.errorContainer
         ) {
             Box(contentAlignment = Alignment.Center) {
                 Icon(
-                    imageVector = Icons.Default.School,
-                    contentDescription = "App Logo",
+                    imageVector = Icons.Default.Security,
+                    contentDescription = "Admin Logo",
                     modifier = Modifier.size(56.dp),
-                    tint = MaterialTheme.colorScheme.primary
+                    tint = MaterialTheme.colorScheme.error
                 )
             }
         }
@@ -71,14 +70,14 @@ fun LoginScreen(
         Spacer(modifier = Modifier.height(24.dp))
 
         Text(
-            text = "Login",
+            text = "Admin Portal",
             style = MaterialTheme.typography.headlineMedium,
             fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.primary
+            color = MaterialTheme.colorScheme.error
         )
         Spacer(modifier = Modifier.height(8.dp))
         Text(
-            text = "Welcome back! Select your role.",
+            text = "Restricted access. Select your role.",
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center
@@ -94,9 +93,9 @@ fun LoginScreen(
                 SegmentedButton(
                     shape = SegmentedButtonDefaults.itemShape(index = index, count = options.size),
                     onClick = { 
-                        if (index == 1) onAdminLoginClick()
+                        if (index == 0) onBackToStudentLogin()
                     },
-                    selected = index == 0
+                    selected = index == 1
                 ) {
                     Text(label)
                 }
@@ -111,13 +110,12 @@ fun LoginScreen(
                 username = it
                 if (uiState is LoginUiState.Error) viewModel.resetState()
             },
-            label = { Text("Student Number") },
-            placeholder = { Text("e.g. 2024-0001") },
+            label = { Text("Admin Username") },
             leadingIcon = {
                 Icon(
                     imageVector = Icons.Default.Person,
                     contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary
+                    tint = MaterialTheme.colorScheme.error
                 )
             },
             modifier = Modifier.fillMaxWidth(),
@@ -140,7 +138,7 @@ fun LoginScreen(
                 Icon(
                     imageVector = Icons.Default.Lock,
                     contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary
+                    tint = MaterialTheme.colorScheme.error
                 )
             },
             trailingIcon = {
@@ -180,19 +178,14 @@ fun LoginScreen(
                 .fillMaxWidth()
                 .height(56.dp),
             shape = RoundedCornerShape(16.dp),
-            enabled = uiState !is LoginUiState.Loading
+            enabled = uiState !is LoginUiState.Loading,
+            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
         ) {
             if (uiState is LoginUiState.Loading) {
-                CircularProgressIndicator(modifier = Modifier.size(24.dp), color = MaterialTheme.colorScheme.onPrimary)
+                CircularProgressIndicator(modifier = Modifier.size(24.dp), color = MaterialTheme.colorScheme.onError)
             } else {
-                Text(text = "LOGIN", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+                Text(text = "ADMIN LOGIN", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
             }
-        }
-        
-        Spacer(modifier = Modifier.height(24.dp))
-        
-        TextButton(onClick = onRegisterClick) {
-            Text("Don't have an account? Register here")
         }
     }
 }

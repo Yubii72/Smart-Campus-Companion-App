@@ -12,6 +12,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
@@ -88,7 +89,10 @@ class MainActivity : ComponentActivity() {
 
         enableEdgeToEdge()
         setContent {
-            SmartCampusCompanionAppTheme {
+            val systemInDarkTheme = isSystemInDarkTheme()
+            var isDarkTheme by remember { mutableStateOf(systemInDarkTheme) }
+
+            SmartCampusCompanionAppTheme(darkTheme = isDarkTheme) {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
@@ -188,6 +192,8 @@ class MainActivity : ComponentActivity() {
                                         ) { overlay ->
                                         when (overlay) {
                                             "Settings" -> SettingsScreen(
+                                                isDarkTheme = isDarkTheme,
+                                                onThemeChange = { isDarkTheme = it },
                                                 onLogout = {
                                                     sharedPreferences.edit()
                                                         .putBoolean("is_logged_in", false)

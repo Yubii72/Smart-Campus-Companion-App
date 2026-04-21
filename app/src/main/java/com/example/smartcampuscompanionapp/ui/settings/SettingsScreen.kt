@@ -50,7 +50,12 @@ import com.example.smartcampuscompanionapp.ui.theme.SmartCampusCompanionAppTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SettingsScreen(onLogout: () -> Unit = {}, onBack: () -> Unit = {}) {
+fun SettingsScreen(
+    isDarkTheme: Boolean = false,
+    onThemeChange: (Boolean) -> Unit = {},
+    onLogout: () -> Unit = {},
+    onBack: () -> Unit = {}
+) {
     var showLogoutDialog by remember { mutableStateOf(false) }
 
     if (showLogoutDialog) {
@@ -122,26 +127,27 @@ fun SettingsScreen(onLogout: () -> Unit = {}, onBack: () -> Unit = {}) {
                     modifier = Modifier.padding(bottom = 8.dp)
                 )
                 SettingsCard {
-                    var isChecked by remember { mutableStateOf(true) }
+                    var isNotificationsEnabled by remember { mutableStateOf(true) }
                     SettingsItem(
                         icon = Icons.Default.Notifications,
                         title = "Notifications",
                         subtitle = "Receive campus alerts and updates"
                     ) {
-                        Switch(checked = isChecked, onCheckedChange = { isChecked = it })
+                        Switch(
+                            checked = isNotificationsEnabled,
+                            onCheckedChange = { isNotificationsEnabled = it }
+                        )
                     }
-                }
-            }
-
-            item {
-                SettingsCard {
-                    var isChecked by remember { mutableStateOf(false) }
+                    
                     SettingsItem(
                         icon = Icons.Default.Palette,
                         title = "Dark Mode",
                         subtitle = "Enable or disable dark theme"
                     ) {
-                        Switch(checked = isChecked, onCheckedChange = { isChecked = it })
+                        Switch(
+                            checked = isDarkTheme,
+                            onCheckedChange = onThemeChange
+                        )
                     }
                 }
             }

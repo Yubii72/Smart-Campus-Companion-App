@@ -109,12 +109,10 @@ class MainActivity : ComponentActivity() {
                     var overlayScreen by remember { mutableStateOf<String?>(null) }
                     var selectedCollege by remember { mutableStateOf<College?>(null) }
 
+                    // Shared list of tasks for demo purposes. 
+                    // In a real app, these would come from a Database linked to the studentNumber.
                     val tasks = remember {
-                        mutableStateListOf(
-                            Task(title = "Complete Project Proposal", dueDate = "2024-08-15", description = "Finish the proposal."),
-                            Task(title = "Study for Midterms", dueDate = "2024-08-20", description = "Cover chapters 4-6."),
-                            Task(title = "Team Meeting", dueDate = "2024-08-12", description = "Discuss project progress.")
-                        )
+                        mutableStateListOf<Task>()
                     }
 
                     when {
@@ -233,7 +231,8 @@ class MainActivity : ComponentActivity() {
                                                     when (tab) {
                                                         MainTab.Dashboard -> DashboardScreen(
                                                             surname = studentNumber,
-                                                            upcomingTasks = tasks,
+                                                            // Pass filtered tasks to Dashboard if needed for "Upcoming Tasks"
+                                                            upcomingTasks = tasks.filter { it.studentNumber == studentNumber },
                                                             announcementViewModel = announcementViewModel,
                                                             onNavigateToAnnouncements = {
                                                                 overlayScreen = "Announcements"
@@ -260,6 +259,7 @@ class MainActivity : ComponentActivity() {
                                                         )
                                                         MainTab.Tasks -> ScheduleScreen(
                                                             tasks = tasks,
+                                                            studentNumber = studentNumber,
                                                             showBackButton = false
                                                         )
                                                         MainTab.Profile -> {

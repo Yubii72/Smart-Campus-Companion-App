@@ -28,6 +28,7 @@ import java.util.*
 // Data class representing a task
 data class Task(
     val id: String = UUID.randomUUID().toString(), // Unique ID for each task
+    val studentNumber: String = "", // Added to identify the owner of the task
     val title: String, // Task title
     val dueDate: String, // Task due date
     val description: String // Task description
@@ -37,6 +38,7 @@ data class Task(
 @Composable
 fun ScheduleScreen(
     tasks: MutableList<Task>,
+    studentNumber: String, // Added parameter
     onBack: () -> Unit = {},
     showBackButton: Boolean = true
 ) {
@@ -99,8 +101,10 @@ fun ScheduleScreen(
         // Get today's date for filtering
         val todayDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
 
-        // Filter tasks based on search query
-        val filteredTasks = tasks.filter {
+        // Filter tasks based on logged-in student and search query
+        val userTasks = tasks.filter { it.studentNumber == studentNumber }
+        
+        val filteredTasks = userTasks.filter {
             it.title.contains(searchQuery, true) || it.description.contains(searchQuery, true)
         }.filter {
             // Filter only today's tasks if checkbox enabled
@@ -234,11 +238,18 @@ fun ScheduleScreen(
             task = editingTask,
             onDismiss = { showDialog = false },
             onSave = { task ->
+                // Ensure new task is assigned to current student
+                val taskWithUser = if (editingTask == null) {
+                    task.copy(studentNumber = studentNumber)
+                } else {
+                    task
+                }
+
                 if (editingTask == null) {
-                    tasks.add(task)
+                    tasks.add(taskWithUser)
                 } else {
                     val index = tasks.indexOfFirst { it.id == task.id }
-                    if (index != -1) tasks[index] = task
+                    if (index != -1) tasks[index] = taskWithUser
                 }
                 showDialog = false
             }
@@ -411,6 +422,7 @@ fun TaskDialog(
                 if (title.isBlank()) return@Button
                 if (dueDate.isBlank()) return@Button
 
+                // Initial creation doesn't have studentNumber, it will be set by the caller (onSave)
                 val newTask = task?.copy(title = title, dueDate = dueDate, description = description)
                     ?: Task(title = title, dueDate = dueDate, description = description)
 
@@ -454,23 +466,25 @@ fun TaskItem(task: Task, onEdit: () -> Unit, onDelete: () -> Unit) {
                         "Due: ${task.dueDate}",
                         style = MaterialTheme.typography.labelMedium,
                         fontWeight = FontWeight.Medium,
-                        color = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                        color = MaterialTheme.colorScheme.onPrimaryContainer
                     )
                 }
-                Spacer(modifier = Modifier.height(6.dp))
-                Text(
-                    task.description,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+                if (task.description.isNotBlank()) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        task.description,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
             }
-            Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+            Row {
                 IconButton(onClick = onEdit) {
-                    Icon(Icons.Default.Edit, contentDescription = "Edit")
+                    Icon(Icons.Default.Edit, contentDescription = "Edit", tint = MaterialTheme.colorScheme.primary)
                 }
                 IconButton(onClick = onDelete) {
-                    Icon(Icons.Default.Delete, contentDescription = "Delete")
+                    Icon(Icons.Default.Delete, contentDescription = "Delete", tint = MaterialTheme.colorScheme.error)
                 }
             }
         }
@@ -480,13 +494,7 @@ fun TaskItem(task: Task, onEdit: () -> Unit, onDelete: () -> Unit) {
 @Preview(showBackground = true)
 @Composable
 fun ScheduleScreenPreview() {
-    val tasks = remember {
-        mutableStateListOf(
-            Task(title = "Complete Project Proposal", dueDate = "2024-08-15", description = "Finish the proposal."),
-            Task(title = "Study for Midterms", dueDate = "2024-08-20", description = "Cover chapters 4-6.")
-        )
-    }
     SmartCampusCompanionAppTheme {
-        ScheduleScreen(tasks = tasks, onBack = {})
+        ScheduleScreen(tasks = mutableListOf(), studentNumber = "12345")
     }
 }

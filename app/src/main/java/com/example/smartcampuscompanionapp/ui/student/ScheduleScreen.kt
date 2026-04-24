@@ -21,24 +21,16 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.smartcampuscompanionapp.data.model.Task
 import com.example.smartcampuscompanionapp.ui.theme.SmartCampusCompanionAppTheme
+import com.example.smartcampuscompanionapp.ui.viewmodel.TaskViewModel
 import java.text.SimpleDateFormat
 import java.util.*
-
-// Data class representing a task
-data class Task(
-    val id: String = UUID.randomUUID().toString(), // Unique ID for each task
-    val studentNumber: String = "", // Added to identify the owner of the task
-    val title: String, // Task title
-    val dueDate: String, // Task due date
-    val description: String // Task description
-)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ScheduleScreen(
-    tasks: MutableList<Task>,
-    studentNumber: String, // Added parameter
+    viewModel: TaskViewModel,
     onBack: () -> Unit = {},
     showBackButton: Boolean = true
 ) {
@@ -56,6 +48,8 @@ fun ScheduleScreen(
     var searchQuery by remember { mutableStateOf("") }
     // Checkbox for filtering today's tasks
     var filterToday by remember { mutableStateOf(false) }
+
+    val tasks by viewModel.tasks.collectAsState()
 
     // Scaffold layout containing top bar, FAB, and content
     Scaffold(
@@ -101,10 +95,8 @@ fun ScheduleScreen(
         // Get today's date for filtering
         val todayDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
 
-        // Filter tasks based on logged-in student and search query
-        val userTasks = tasks.filter { it.studentNumber == studentNumber }
-        
-        val filteredTasks = userTasks.filter {
+        // Filter tasks based on search query
+        val filteredTasks = tasks.filter {
             it.title.contains(searchQuery, true) || it.description.contains(searchQuery, true)
         }.filter {
             // Filter only today's tasks if checkbox enabled
@@ -238,18 +230,10 @@ fun ScheduleScreen(
             task = editingTask,
             onDismiss = { showDialog = false },
             onSave = { task ->
-                // Ensure new task is assigned to current student
-                val taskWithUser = if (editingTask == null) {
-                    task.copy(studentNumber = studentNumber)
-                } else {
-                    task
-                }
-
                 if (editingTask == null) {
-                    tasks.add(taskWithUser)
+                    viewModel.addTask(task)
                 } else {
-                    val index = tasks.indexOfFirst { it.id == task.id }
-                    if (index != -1) tasks[index] = taskWithUser
+                    viewModel.updateTask(task)
                 }
                 showDialog = false
             }
@@ -260,7 +244,7 @@ fun ScheduleScreen(
         DeleteConfirmationDialog(
             task = taskToDelete,
             onConfirm = {
-                taskToDelete?.let { tasks.remove(it) }
+                taskToDelete?.let { viewModel.deleteTask(it.id) }
                 showDeleteConfirmDialog = false
                 taskToDelete = null
             },
@@ -495,6 +479,8 @@ fun TaskItem(task: Task, onEdit: () -> Unit, onDelete: () -> Unit) {
 @Composable
 fun ScheduleScreenPreview() {
     SmartCampusCompanionAppTheme {
-        ScheduleScreen(tasks = mutableListOf(), studentNumber = "12345")
+        // Mock ViewModel or just a simplified version for preview if needed
+        // For now, let's just comment it out or provide a dummy
+        // ScheduleScreen(viewModel = ...)
     }
 }

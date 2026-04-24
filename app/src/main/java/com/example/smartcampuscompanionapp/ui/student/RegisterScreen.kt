@@ -140,6 +140,7 @@ fun RegisterScreen(
                         )
                         viewModel.register(newStudent)
                         onRegisterSuccess()
+                        viewModel.resetState()
                     }
                 },
                 modifier = Modifier.fillMaxWidth().height(56.dp),

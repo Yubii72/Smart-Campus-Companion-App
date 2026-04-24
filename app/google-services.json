@@ -1,0 +1,166 @@
+{
+  "project_info": {
+    "project_number": "144238812891",
+    "project_id": "cloud-firebase-ce4cf",
+    "storage_bucket": "cloud-firebase-ce4cf.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:144238812891:android:3d021df9c52fe49827f6fe",
+        "android_client_info": {
+          "package_name": "com.example.academiceventmanagement"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "144238812891-j2pagll849vi7m5km1n66uk1erl40ao7.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.academiceventmanagement",
+            "certificate_hash": "555487887822ffa60354f20a1701e8b2413df948"
+          }
+        },
+        {
+          "client_id": "144238812891-9q19ghioce3ho60gsilhkqit9nbo89pu.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAiD_vYrMJSPIBLLAg25GF_p0dekfto5BE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "144238812891-9q19ghioce3ho60gsilhkqit9nbo89pu.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:144238812891:android:03c9427a1876e65227f6fe",
+        "android_client_info": {
+          "package_name": "com.example.cloudfirebase.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "144238812891-mh8gsur40jup94jp7lcddctvd5eacld9.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.cloudfirebase.app",
+            "certificate_hash": "555487887822ffa60354f20a1701e8b2413df948"
+          }
+        },
+        {
+          "client_id": "144238812891-9q19ghioce3ho60gsilhkqit9nbo89pu.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAiD_vYrMJSPIBLLAg25GF_p0dekfto5BE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "144238812891-9q19ghioce3ho60gsilhkqit9nbo89pu.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:144238812891:android:acde188fcc68f86c27f6fe",
+        "android_client_info": {
+          "package_name": "com.example.hanaparal"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "144238812891-98au38jc224i9j9p05cr20gb95ocsi3f.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.hanaparal",
+            "certificate_hash": "555487887822ffa60354f20a1701e8b2413df948"
+          }
+        },
+        {
+          "client_id": "144238812891-o9pa33ina404sdepepmbvauqn11ki8o7.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.hanaparal",
+            "certificate_hash": "e9e02daf2bcdfc177adc60710ef2cc90bb57009d"
+          }
+        },
+        {
+          "client_id": "144238812891-9q19ghioce3ho60gsilhkqit9nbo89pu.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAiD_vYrMJSPIBLLAg25GF_p0dekfto5BE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "144238812891-9q19ghioce3ho60gsilhkqit9nbo89pu.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:144238812891:android:78c36eafbc1a92f427f6fe",
+        "android_client_info": {
+          "package_name": "com.example.smartcampuscompanionapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "144238812891-p3fvm1lblrq36jjvc0ao69o1i3lj70vu.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.smartcampuscompanionapp",
+            "certificate_hash": "555487887822ffa60354f20a1701e8b2413df948"
+          }
+        },
+        {
+          "client_id": "144238812891-9q19ghioce3ho60gsilhkqit9nbo89pu.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAiD_vYrMJSPIBLLAg25GF_p0dekfto5BE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "144238812891-9q19ghioce3ho60gsilhkqit9nbo89pu.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

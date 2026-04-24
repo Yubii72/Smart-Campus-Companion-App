@@ -1,5 +1,7 @@
 package com.example.smartcampuscompanionapp.ui.student
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -14,6 +16,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
@@ -21,6 +24,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.example.smartcampuscompanionapp.ui.viewmodel.LoginViewModel
 import com.example.smartcampuscompanionapp.ui.viewmodel.LoginUiState
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.android.gms.common.api.ApiException
+import com.example.smartcampuscompanionapp.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -35,10 +42,24 @@ fun LoginScreen(
     var passwordVisible by remember { mutableStateOf(false) }
     
     val uiState by viewModel.uiState.collectAsState()
+    val context = LocalContext.current
+
+    val googleSignInLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
+        try {
+            val account = task.getResult(ApiException::class.java)
+            account.idToken?.let { viewModel.signInWithGoogle(it) }
+        } catch (e: ApiException) {
+            viewModel.setError("Google Sign-In failed: ${e.statusCode} ${e.message}")
+        }
+    }
 
     LaunchedEffect(uiState) {
-        if (uiState is LoginUiState.Success) {
-            onLoginSuccess(username, false)
+        val state = uiState
+        if (state is LoginUiState.Success) {
+            onLoginSuccess(state.studentNumber, false)
             viewModel.resetState()
         }
     }
@@ -187,6 +208,26 @@ fun LoginScreen(
             } else {
                 Text(text = "LOGIN", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
             }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        OutlinedButton(
+            onClick = {
+                val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                    .requestIdToken(context.getString(R.string.default_web_client_id))
+                    .requestEmail()
+                    .build()
+                val googleSignInClient = GoogleSignIn.getClient(context, gso)
+                googleSignInLauncher.launch(googleSignInClient.signInIntent)
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(56.dp),
+            shape = RoundedCornerShape(16.dp),
+            enabled = uiState !is LoginUiState.Loading
+        ) {
+            Text(text = "Continue with Google", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
         }
         
         Spacer(modifier = Modifier.height(24.dp))

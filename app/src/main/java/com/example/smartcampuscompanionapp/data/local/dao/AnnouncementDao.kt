@@ -9,7 +9,7 @@ interface AnnouncementDao {
     @Query("SELECT * FROM announcements ORDER BY date DESC")
     fun getAllAnnouncements(): Flow<List<Announcement>>
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertAnnouncement(announcement: Announcement)
 
     @Update

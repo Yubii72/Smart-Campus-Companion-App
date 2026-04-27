@@ -138,8 +138,8 @@ fun LoginScreen(
                     username = it
                     if (uiState is LoginUiState.Error) viewModel.resetState()
                 },
-                label = { Text("Student Number") },
-                placeholder = { Text("e.g. 2200000") },
+                label = { Text("Student Number / Email") },
+                placeholder = { Text("e.g. 2200000 or email@domain.com") },
                 leadingIcon = {
                     Icon(
                         imageVector = Icons.Default.Person,

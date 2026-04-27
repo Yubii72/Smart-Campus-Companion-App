@@ -57,7 +57,7 @@ fun DashboardScreen(
     val announcements by announcementViewModel.allAnnouncements.collectAsState()
     val hasUnreadAnnouncements = announcements.any { !it.isRead }
     val context = LocalContext.current
-    
+
     // LaunchedEffect to ensure profile is loaded if surname is provided
     LaunchedEffect(surname) {
         if (surname.isNotBlank() && surname != "Student" && surname != "Admin") {

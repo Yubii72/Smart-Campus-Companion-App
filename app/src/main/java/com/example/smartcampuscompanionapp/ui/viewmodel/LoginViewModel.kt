@@ -38,9 +38,9 @@ class LoginViewModel(
                 return@launch
             }
 
-            val student = repository.getStudentByNumber(studentNumber)
+            val student = repository.getStudentByNumber(studentNumber) ?: repository.getStudentByEmail(studentNumber)
             if (student != null && student.password == password) {
-                _uiState.value = LoginUiState.Success(studentNumber)
+                _uiState.value = LoginUiState.Success(student.id) // Return internal ID
             } else {
                 _uiState.value = LoginUiState.Error("Invalid username or password")
             }
@@ -54,7 +54,7 @@ class LoginViewModel(
                 repository.insertStudent(student)
                 // Sync to Firebase so admin can see it
                 firebaseStudentRepository.saveStudent(student)
-                _uiState.value = LoginUiState.Success(student.studentNumber)
+                _uiState.value = LoginUiState.Success(student.id) // Return internal ID
             } catch (e: Exception) {
                 _uiState.value = LoginUiState.Error(e.message ?: "Registration failed")
             }
@@ -78,19 +78,18 @@ class LoginViewModel(
                 val email = user?.email ?: ""
                 val displayName = user?.displayName ?: ""
                 val photoUrl = user?.photoUrl?.toString()
+                val uid = user?.uid ?: ""
                 
-                // Use email as student number if not available, or some unique id
-                val identifier = email.ifBlank { user?.uid ?: "GoogleUser" }
-                
-                // Check if student exists locally
-                val existingStudent = repository.getStudentByNumber(identifier)
+                // Check if student exists locally by UID
+                val existingStudent = repository.getStudentById(uid)
                 if (existingStudent == null) {
                     val names = displayName.split(" ")
                     val firstName = names.firstOrNull() ?: ""
                     val lastName = if (names.size > 1) names.last() else ""
                     
                     val newStudent = Student(
-                        studentNumber = identifier,
+                        id = uid,
+                        studentNumber = "", // User must fill this during setup
                         firstName = firstName,
                         lastName = lastName,
                         primaryEmailAddress = email,
@@ -104,7 +103,7 @@ class LoginViewModel(
                     repository.insertStudent(updatedStudent)
                 }
                 
-                _uiState.value = LoginUiState.Success(identifier)
+                _uiState.value = LoginUiState.Success(uid)
             } else {
                 _uiState.value = LoginUiState.Error(result.exceptionOrNull()?.message ?: "Google Sign-In failed")
             }

@@ -13,7 +13,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-@Database(entities = [Student::class, Announcement::class], version = 6, exportSchema = false)
+@Database(entities = [Student::class, Announcement::class], version = 8, exportSchema = false)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun studentDao(): StudentDao
     abstract fun announcementDao(): AnnouncementDao
@@ -35,7 +35,6 @@ abstract class AppDatabase : RoomDatabase() {
                         super.onCreate(db)
                         CoroutineScope(Dispatchers.IO).launch {
                             val database = getDatabase(context)
-                            database.studentDao().insertStudent(getDemoStudent())
                             insertDemoAnnouncements(database.announcementDao())
                         }
                     }
@@ -44,10 +43,6 @@ abstract class AppDatabase : RoomDatabase() {
                         super.onOpen(db)
                         CoroutineScope(Dispatchers.IO).launch {
                             val database = getDatabase(context)
-                            val studentDao = database.studentDao()
-                            if (studentDao.getStudentCount() == 0) {
-                                studentDao.insertStudent(getDemoStudent())
-                            }
                             val announcementDao = database.announcementDao()
                             if (announcementDao.getAnnouncementCount() == 0) {
                                 insertDemoAnnouncements(announcementDao)
@@ -81,47 +76,5 @@ abstract class AppDatabase : RoomDatabase() {
             )
             demos.forEach { dao.insertAnnouncement(it) }
         }
-
-        private fun getDemoStudent() = Student(
-            studentNumber = "2024-0001",
-            password = "password123",
-            firstName = "Mark",
-            lastName = "Dela Cruz",
-            sexAtBirth = "Male",
-            civilStatus = "Single",
-            residency = "Local",
-            nationality = "Filipino",
-            religion = "Catholic",
-            dateOfBirth = "2002-01-01",
-            placeOfBirth = "Manila",
-            presentAddress = "123 Main St, Quezon City",
-            permanentAddress = "123 Main St, Quezon City",
-            primaryMobileNumber = "09123456789",
-            alternateMobileNumber = "09987654321",
-            primaryEmailAddress = "student@university.edu.ph",
-            alternateEmailAddress = "personal@email.com",
-            lastSchoolAttended = "City High School",
-            lastYearAttended = "2023",
-            learnerReferenceNumber = "123456789012",
-            honorsReceived = "With Honors",
-            fathersName = "",
-            fathersOccupation = "",
-            fathersDateOfBirth = "",
-            fathersSexAtBirth = "",
-            mothersName = "",
-            mothersOccupation = "",
-            mothersDateOfBirth = "",
-            mothersSexAtBirth = "",
-            numberOfSiblings = 0,
-            familyAnnualIncome = 0.0,
-            guardiansName = "",
-            relationToGuardian = "",
-            guardiansContactNumber = "",
-            college = "",
-            program = "",
-            curriculum = "",
-            yearLevel = "",
-            section = ""
-        )
     }
 }

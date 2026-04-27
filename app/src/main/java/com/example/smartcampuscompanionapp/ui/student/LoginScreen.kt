@@ -133,7 +133,7 @@ fun LoginScreen(
                 if (uiState is LoginUiState.Error) viewModel.resetState()
             },
             label = { Text("Student Number") },
-            placeholder = { Text("e.g. 2024-0001") },
+            placeholder = { Text("e.g. 2200000") },
             leadingIcon = {
                 Icon(
                     imageVector = Icons.Default.Person,

@@ -12,44 +12,17 @@ data class Student(
     val firstName: String,
     val lastName: String,
     val sexAtBirth: String,
-    val civilStatus: String,
-    val residency: String,
     val nationality: String,
-    val religion: String,
     val dateOfBirth: String,
-    val placeOfBirth: String,
 
     // Contact Information
     val presentAddress: String,
-    val permanentAddress: String,
     val primaryMobileNumber: String,
-    val alternateMobileNumber: String,
     val primaryEmailAddress: String,
-    val alternateEmailAddress: String,
 
-    // Family Background
+    // Family Background (Emergency Contacts)
     val fathersName: String,
-    val fathersOccupation: String,
-    val fathersDateOfBirth: String,
-    val fathersSexAtBirth: String,
-
     val mothersName: String,
-    val mothersOccupation: String,
-    val mothersDateOfBirth: String,
-    val mothersSexAtBirth: String,
-
-    val numberOfSiblings: Int,
-    val familyAnnualIncome: Double,
-
-    val guardiansName: String,
-    val relationToGuardian: String,
-    val guardiansContactNumber: String,
-
-    // Educational Background
-    val lastSchoolAttended: String,
-    val lastYearAttended: String,
-    val learnerReferenceNumber: String,
-    val honorsReceived: String,
 
     // Enrollment Details
     val college: String,

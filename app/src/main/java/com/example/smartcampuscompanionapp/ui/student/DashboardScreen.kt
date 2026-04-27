@@ -19,6 +19,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.smartcampuscompanionapp.data.model.Task
 import com.example.smartcampuscompanionapp.ui.campus_info.College
 import com.example.smartcampuscompanionapp.ui.campus_info.colleges
 import com.example.smartcampuscompanionapp.ui.viewmodel.AnnouncementViewModel

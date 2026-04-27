@@ -8,10 +8,10 @@
             <InsightsFilterSettings>
               <option name="connection">
                 <ConnectionSetting>
-                  <option name="appId" value="PLACEHOLDER" />
-                  <option name="mobileSdkAppId" value="" />
-                  <option name="projectId" value="" />
-                  <option name="projectNumber" value="" />
+                  <option name="appId" value="com.example.smartcampuscompanionapp" />
+                  <option name="mobileSdkAppId" value="1:144238812891:android:78c36eafbc1a92f427f6fe" />
+                  <option name="projectId" value="cloud-firebase-ce4cf" />
+                  <option name="projectNumber" value="144238812891" />
                 </ConnectionSetting>
               </option>
               <option name="signal" value="SIGNAL_UNSPECIFIED" />

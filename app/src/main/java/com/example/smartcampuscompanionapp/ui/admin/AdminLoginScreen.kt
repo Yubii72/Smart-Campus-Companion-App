@@ -36,8 +36,9 @@ fun AdminLoginScreen(
     val uiState by viewModel.uiState.collectAsState()
 
     LaunchedEffect(uiState) {
-        if (uiState is LoginUiState.Success) {
-            onLoginSuccess(username, true)
+        val state = uiState
+        if (state is LoginUiState.Success) {
+            onLoginSuccess(state.studentNumber, true)
             viewModel.resetState()
         }
     }

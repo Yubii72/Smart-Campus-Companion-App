@@ -96,14 +96,6 @@
           }
         },
         {
-          "client_id": "144238812891-o9pa33ina404sdepepmbvauqn11ki8o7.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.example.hanaparal",
-            "certificate_hash": "e9e02daf2bcdfc177adc60710ef2cc90bb57009d"
-          }
-        },
-        {
           "client_id": "144238812891-9q19ghioce3ho60gsilhkqit9nbo89pu.apps.googleusercontent.com",
           "client_type": 3
         }
@@ -133,11 +125,27 @@
       },
       "oauth_client": [
         {
+          "client_id": "144238812891-gjd0tc56dkad34n971fkn0id5gl1f5jj.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.smartcampuscompanionapp",
+            "certificate_hash": "e9e02daf2bcdfc177adc60710ef2cc90bb57009d"
+          }
+        },
+        {
           "client_id": "144238812891-p3fvm1lblrq36jjvc0ao69o1i3lj70vu.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "com.example.smartcampuscompanionapp",
             "certificate_hash": "555487887822ffa60354f20a1701e8b2413df948"
+          }
+        },
+        {
+          "client_id": "144238812891-s5npbfg5g7c4kkk2kfennfmjqo6sc0od.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.smartcampuscompanionapp",
+            "certificate_hash": "6be62ea6907c14d8471349c82d6b8e56df06ca7e"
           }
         },
         {

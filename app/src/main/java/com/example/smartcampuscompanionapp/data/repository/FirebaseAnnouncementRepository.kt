@@ -6,6 +6,7 @@ import com.google.firebase.firestore.Query
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.tasks.await
 
 class FirebaseAnnouncementRepository(private val firestore: FirebaseFirestore = FirebaseFirestore.getInstance()) {
@@ -17,7 +18,9 @@ class FirebaseAnnouncementRepository(private val firestore: FirebaseFirestore = 
             .orderBy("timestamp", Query.Direction.DESCENDING)
             .addSnapshotListener { snapshot, error ->
                 if (error != null) {
-                    close(error)
+                    // Log the error but don't crash the flow
+                    android.util.Log.e("Firestore", "Error fetching announcements: ${error.message}")
+                    trySend(emptyList()) // Send empty list instead of crashing
                     return@addSnapshotListener
                 }
                 if (snapshot != null) {
@@ -26,6 +29,9 @@ class FirebaseAnnouncementRepository(private val firestore: FirebaseFirestore = 
                 }
             }
         awaitClose { subscription.remove() }
+    }.catch { e ->
+        android.util.Log.e("Firestore", "Flow caught error: ${e.message}")
+        emit(emptyList())
     }
 
     suspend fun addAnnouncement(announcement: Announcement): Result<Unit> {
@@ -33,6 +39,7 @@ class FirebaseAnnouncementRepository(private val firestore: FirebaseFirestore = 
             announcementsCollection.document(announcement.id).set(announcement).await()
             Result.success(Unit)
         } catch (e: Exception) {
+            android.util.Log.e("Firestore", "Error adding announcement: ${e.message}")
             Result.failure(e)
         }
     }
@@ -42,6 +49,7 @@ class FirebaseAnnouncementRepository(private val firestore: FirebaseFirestore = 
             announcementsCollection.document(id).delete().await()
             Result.success(Unit)
         } catch (e: Exception) {
+            android.util.Log.e("Firestore", "Error deleting announcement: ${e.message}")
             Result.failure(e)
         }
     }

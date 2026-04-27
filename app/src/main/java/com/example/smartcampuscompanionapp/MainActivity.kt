@@ -2,6 +2,7 @@ package com.example.smartcampuscompanionapp
 
 import android.content.Context
 import android.os.Bundle
+import android.os.Build
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -50,6 +51,7 @@ import com.example.smartcampuscompanionapp.data.repository.FirebaseTaskRepositor
 import com.example.smartcampuscompanionapp.data.repository.StudentRepository
 import com.example.smartcampuscompanionapp.ui.admin.AdminDashboardScreen
 import com.example.smartcampuscompanionapp.ui.admin.AdminLoginScreen
+import com.example.smartcampuscompanionapp.ui.admin.StudentRecordsScreen
 import com.example.smartcampuscompanionapp.ui.campus_info.College
 import com.example.smartcampuscompanionapp.ui.campus_info.CollegeInfoScreen
 import com.example.smartcampuscompanionapp.ui.campus_info.CollegeListScreen
@@ -118,7 +120,7 @@ class MainActivity : ComponentActivity() {
             // Handle permission result if needed
         }
 
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) !=
                 PackageManager.PERMISSION_GRANTED
             ) {
@@ -166,7 +168,7 @@ class MainActivity : ComponentActivity() {
                                         android.util.Log.e("FCM", "Subscription failed", task.exception)
                                     }
                                 }
-                            if (studentNumber.isNotBlank()) {
+                            if (studentNumber.isNotBlank() && !isAdmin) {
                                 scheduleDeadlineWorker(studentNumber)
                             }
                             
@@ -209,27 +211,76 @@ class MainActivity : ComponentActivity() {
                         )
                         isLoggedIn -> {
                             if (isAdmin) {
-                                when (overlayScreen) {
-                                    "Announcements" -> AnnouncementScreen(
-                                        onBack = { overlayScreen = null },
-                                        viewModel = announcementViewModel,
-                                        isAdmin = true
-                                    )
-                                    else -> AdminDashboardScreen(
-                                        onNavigationItemClick = { item ->
-                                            when (item) {
-                                                "Logout" -> {
-                                                    sharedPreferences.edit { 
-                                                        putBoolean("is_logged_in", false)
-                                                        putBoolean("is_admin", false)
+                                AnimatedContent(
+                                    targetState = overlayScreen,
+                                    modifier = Modifier.fillMaxSize(),
+                                    transitionSpec = {
+                                        (fadeIn() + slideInHorizontally { it / 4 }) togetherWith
+                                                (fadeOut() + slideOutHorizontally { -it / 4 })
+                                    },
+                                    label = "admin_overlay"
+                                ) { overlay ->
+                                    when (overlay) {
+                                        "Announcements" -> AnnouncementScreen(
+                                            onBack = { overlayScreen = null },
+                                            viewModel = announcementViewModel,
+                                            isAdmin = true
+                                        )
+                                        "CollegeList" -> CollegeListScreen(
+                                            onCollegeClick = { college ->
+                                                selectedCollege = college
+                                                overlayScreen = "CollegeInfo"
+                                            },
+                                            onBackClick = { overlayScreen = null }
+                                        )
+                                        "CollegeInfo" -> selectedCollege?.let { college ->
+                                            CollegeInfoScreen(
+                                                college = college,
+                                                onBackClick = { overlayScreen = "CollegeList" }
+                                            )
+                                        } ?: Box(Modifier.fillMaxSize())
+                                        "Settings" -> SettingsScreen(
+                                            isDarkTheme = isDarkTheme,
+                                            onThemeChange = { isDarkTheme = it },
+                                            onLogout = {
+                                                sharedPreferences.edit()
+                                                    .putBoolean("is_logged_in", false)
+                                                    .putBoolean("is_admin", false)
+                                                    .putString("student_number", null)
+                                                    .apply()
+                                                isLoggedIn = false
+                                                isAdmin = false
+                                                overlayScreen = null
+                                                studentNumber = ""
+                                            },
+                                            onBack = { overlayScreen = null }
+                                        )
+                                        "StudentRecords" -> StudentRecordsScreen(
+                                            repository = studentRepository,
+                                            onBack = { overlayScreen = null }
+                                        )
+                                        else -> AdminDashboardScreen(
+                                            announcementViewModel = announcementViewModel,
+                                            onNavigationItemClick = { item ->
+                                                when (item) {
+                                                    "Logout" -> {
+                                                        sharedPreferences.edit { 
+                                                            putBoolean("is_logged_in", false)
+                                                            putBoolean("is_admin", false)
+                                                            putString("student_number", null)
+                                                        }
+                                                        isLoggedIn = false
+                                                        isAdmin = false
+                                                        studentNumber = ""
                                                     }
-                                                    isLoggedIn = false
-                                                    isAdmin = false
+                                                    "Manage Announcements" -> overlayScreen = "Announcements"
+                                                    "Campus Info" -> overlayScreen = "CollegeList"
+                                                    "System Settings" -> overlayScreen = "Settings"
+                                                    "Student Records" -> overlayScreen = "StudentRecords"
                                                 }
-                                                "Manage Announcements" -> overlayScreen = "Announcements"
                                             }
-                                        }
-                                    )
+                                        )
+                                    }
                                 }
                             } else {
                                 Scaffold(
@@ -427,7 +478,7 @@ class MainActivity : ComponentActivity() {
         val channelId = "announcements_channel"
         val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(channelId, "Announcements", NotificationManager.IMPORTANCE_HIGH)
             notificationManager.createNotificationChannel(channel)
         }

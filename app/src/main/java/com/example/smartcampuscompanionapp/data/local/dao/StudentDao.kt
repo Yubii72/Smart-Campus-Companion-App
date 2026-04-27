@@ -14,4 +14,7 @@ interface StudentDao {
 
     @Query("SELECT COUNT(*) FROM students")
     suspend fun getStudentCount(): Int
+
+    @Query("SELECT * FROM students ORDER BY lastName ASC")
+    fun getAllStudents(): Flow<List<Student>>
 }

@@ -364,6 +364,7 @@ class MainActivity : ComponentActivity() {
                                                                 surname = studentNumber,
                                                                 upcomingTasks = taskViewModel?.tasks?.collectAsState()?.value ?: emptyList(),
                                                                 announcementViewModel = announcementViewModel,
+                                                                profileViewModel = profileViewModel,
                                                                 onNavigateToAnnouncements = { overlayScreen = "Announcements" },
                                                                 onNavigateToTasks = { currentTab = MainTab.Tasks },
                                                                 onNavigateToCampusInfo = { overlayScreen = "CollegeList" },

@@ -48,10 +48,16 @@ class LoginViewModel(
     }
 
     fun register(student: Student) {
+        _uiState.value = LoginUiState.Loading
         viewModelScope.launch {
-            repository.insertStudent(student)
-            // Sync to Firebase so admin can see it
-            firebaseStudentRepository.saveStudent(student)
+            try {
+                repository.insertStudent(student)
+                // Sync to Firebase so admin can see it
+                firebaseStudentRepository.saveStudent(student)
+                _uiState.value = LoginUiState.Success(student.studentNumber)
+            } catch (e: Exception) {
+                _uiState.value = LoginUiState.Error(e.message ?: "Registration failed")
+            }
         }
     }
 
@@ -69,7 +75,36 @@ class LoginViewModel(
             val result = authRepository.signInWithGoogle(idToken)
             if (result.isSuccess) {
                 val user = result.getOrNull()
-                _uiState.value = LoginUiState.Success(user?.displayName ?: user?.email ?: "Google User")
+                val email = user?.email ?: ""
+                val displayName = user?.displayName ?: ""
+                val photoUrl = user?.photoUrl?.toString()
+                
+                // Use email as student number if not available, or some unique id
+                val identifier = email.ifBlank { user?.uid ?: "GoogleUser" }
+                
+                // Check if student exists locally
+                val existingStudent = repository.getStudentByNumber(identifier)
+                if (existingStudent == null) {
+                    val names = displayName.split(" ")
+                    val firstName = names.firstOrNull() ?: ""
+                    val lastName = if (names.size > 1) names.last() else ""
+                    
+                    val newStudent = Student(
+                        studentNumber = identifier,
+                        firstName = firstName,
+                        lastName = lastName,
+                        primaryEmailAddress = email,
+                        profileImageUrl = photoUrl
+                    )
+                    repository.insertStudent(newStudent)
+                    firebaseStudentRepository.saveStudent(newStudent)
+                } else if (existingStudent.profileImageUrl == null && photoUrl != null) {
+                    // Update profile image if it was null
+                    val updatedStudent = existingStudent.copy(profileImageUrl = photoUrl)
+                    repository.insertStudent(updatedStudent)
+                }
+                
+                _uiState.value = LoginUiState.Success(identifier)
             } else {
                 _uiState.value = LoginUiState.Error(result.exceptionOrNull()?.message ?: "Google Sign-In failed")
             }

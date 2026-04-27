@@ -19,10 +19,19 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
+import coil3.compose.AsyncImage
+import coil3.request.ImageRequest
+import coil3.request.crossfade
+import com.example.smartcampuscompanionapp.R
+import com.example.smartcampuscompanionapp.data.local.entities.Student
 import com.example.smartcampuscompanionapp.data.model.Task
 import com.example.smartcampuscompanionapp.ui.campus_info.College
 import com.example.smartcampuscompanionapp.ui.campus_info.colleges
 import com.example.smartcampuscompanionapp.ui.viewmodel.AnnouncementViewModel
+import com.example.smartcampuscompanionapp.ui.viewmodel.ProfileViewModel
 
 data class SubjectProgress(
     val name: String,
@@ -36,6 +45,7 @@ fun DashboardScreen(
     surname: String = "Student",
     upcomingTasks: List<Task> = emptyList(),
     announcementViewModel: AnnouncementViewModel,
+    profileViewModel: ProfileViewModel,
     onNavigateToAnnouncements: () -> Unit = {},
     onNavigateToTasks: () -> Unit = {},
     onNavigateToCampusInfo: () -> Unit = {},
@@ -46,7 +56,15 @@ fun DashboardScreen(
 ) {
     val announcements by announcementViewModel.allAnnouncements.collectAsState()
     val hasUnreadAnnouncements = announcements.any { !it.isRead }
+    val context = LocalContext.current
     
+    // LaunchedEffect to ensure profile is loaded if surname is provided
+    LaunchedEffect(surname) {
+        if (surname.isNotBlank() && surname != "Student" && surname != "Admin") {
+            profileViewModel.loadProfile(surname)
+        }
+    }
+
     val subjectProgresses = listOf(
         SubjectProgress("Information Technology", "Programming & Systems", 0.75f),
         SubjectProgress("Computer Science", "Algorithms & Data Structures", 0.60f)
@@ -134,7 +152,7 @@ fun DashboardScreen(
                                 color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
                             )
                             Text(
-                                "$surname!",
+                                "${profileViewModel.firstName.ifBlank { surname }}!",
                                 style = MaterialTheme.typography.headlineSmall,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.onPrimaryContainer
@@ -152,12 +170,25 @@ fun DashboardScreen(
                                 contentAlignment = Alignment.Center,
                                 modifier = Modifier.fillMaxSize()
                             ) {
-                                Icon(
-                                    Icons.Default.Person,
-                                    contentDescription = "Profile",
-                                    modifier = Modifier.size(32.dp),
-                                    tint = MaterialTheme.colorScheme.onPrimary
-                                )
+                                if (profileViewModel.profileImageUrl != null) {
+                                    AsyncImage(
+                                        model = ImageRequest.Builder(context)
+                                            .data(profileViewModel.profileImageUrl)
+                                            .crossfade(true)
+                                            .build(),
+                                        contentDescription = "Profile",
+                                        modifier = Modifier.fillMaxSize(),
+                                        contentScale = ContentScale.Crop,
+                                        error = painterResource(R.drawable.irang)
+                                    )
+                                } else {
+                                    Icon(
+                                        Icons.Default.Person,
+                                        contentDescription = "Profile",
+                                        modifier = Modifier.size(32.dp),
+                                        tint = MaterialTheme.colorScheme.onPrimary
+                                    )
+                                }
                             }
                         }
                     }

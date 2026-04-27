@@ -29,5 +29,6 @@ data class Student(
     val program: String = "",
     val curriculum: String = "",
     val yearLevel: String = "",
-    val section: String = ""
+    val section: String = "",
+    val profileImageUrl: String? = null
 )

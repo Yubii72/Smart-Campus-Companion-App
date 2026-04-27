@@ -3,7 +3,7 @@ package com.example.smartcampuscompanionapp
 import android.content.Context
 import android.os.Bundle
 import android.os.Build
-import androidx.activity.ComponentActivity
+import androidx.fragment.app.FragmentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
@@ -56,6 +56,7 @@ import com.example.smartcampuscompanionapp.ui.student.DashboardScreen
 import com.example.smartcampuscompanionapp.ui.student.LoginScreen
 import com.example.smartcampuscompanionapp.ui.student.ProfileScreen
 import com.example.smartcampuscompanionapp.ui.student.RegisterScreen
+import com.example.smartcampuscompanionapp.ui.student.SetupProfileScreen
 import com.example.smartcampuscompanionapp.ui.theme.SmartCampusCompanionAppTheme
 import com.example.smartcampuscompanionapp.ui.viewmodel.AnnouncementViewModel
 import com.example.smartcampuscompanionapp.ui.viewmodel.AnnouncementViewModelFactory
@@ -86,7 +87,7 @@ enum class AdminTab(val title: String, val icon: ImageVector) {
     Students("Records", Icons.Default.People)
 }
 
-class MainActivity : ComponentActivity() {
+class MainActivity : FragmentActivity() {
 
     // DATA INITIALIZATION
     private val database by lazy { AppDatabase.getDatabase(this) }
@@ -142,6 +143,9 @@ class MainActivity : ComponentActivity() {
                 mutableStateOf(sharedPreferences.getBoolean("is_admin", false))
             }
             var studentNumber by remember { mutableStateOf(sharedPreferences.getString("student_number", "") ?: "") }
+            var isProfileSetupComplete by remember {
+                mutableStateOf(sharedPreferences.getBoolean("is_profile_setup_complete_${studentNumber}", false))
+            }
 
             // THEME SWITCHER (Admin Argon vs Student)
             SmartCampusCompanionAppTheme(
@@ -202,7 +206,16 @@ class MainActivity : ComponentActivity() {
                             }
                         )
                         isLoggedIn -> {
-                            if (isAdmin) {
+                            if (!isProfileSetupComplete && !isAdmin) {
+                                SetupProfileScreen(
+                                    studentNumber = studentNumber,
+                                    viewModel = profileViewModel,
+                                    onComplete = {
+                                        sharedPreferences.edit { putBoolean("is_profile_setup_complete_${studentNumber}", true) }
+                                        isProfileSetupComplete = true
+                                    }
+                                )
+                            } else if (isAdmin) {
                                 // ADMIN UI
                                 Scaffold(
                                     modifier = Modifier.fillMaxSize(),
@@ -386,8 +399,27 @@ class MainActivity : ComponentActivity() {
                         }
                         // AUTHENTICATION SCREENS
                         currentScreen == "Register" -> RegisterScreen(viewModel = loginViewModel, onRegisterSuccess = { currentScreen = "Auth" }, onBack = { currentScreen = "Auth" })
-                        currentScreen == "AdminLogin" -> AdminLoginScreen(viewModel = loginViewModel, onLoginSuccess = { user, isAdm -> sharedPreferences.edit { putBoolean("is_logged_in", true); putBoolean("is_admin", true); putString("student_number", user) }; studentNumber = user; isLoggedIn = true; isAdmin = true }, onBackToStudentLogin = { currentScreen = "Auth" })
-                        else -> LoginScreen(viewModel = loginViewModel, onLoginSuccess = { studentNum, isAdm -> sharedPreferences.edit { putBoolean("is_logged_in", true); putBoolean("is_admin", false); putString("student_number", studentNum) }; studentNumber = studentNum; isLoggedIn = true; isAdmin = false }, onRegisterClick = { currentScreen = "Register" }, onAdminLoginClick = { currentScreen = "AdminLogin" })
+                        currentScreen == "AdminLogin" -> AdminLoginScreen(viewModel = loginViewModel, onLoginSuccess = { user, isAdm -> 
+                            sharedPreferences.edit { 
+                                putBoolean("is_logged_in", true)
+                                putBoolean("is_admin", true)
+                                putString("student_number", user) 
+                            }
+                            studentNumber = user
+                            isLoggedIn = true
+                            isAdmin = true 
+                        }, onBackToStudentLogin = { currentScreen = "Auth" })
+                        else -> LoginScreen(viewModel = loginViewModel, onLoginSuccess = { studentNum, isAdm -> 
+                            sharedPreferences.edit { 
+                                putBoolean("is_logged_in", true)
+                                putBoolean("is_admin", false)
+                                putString("student_number", studentNum) 
+                            }
+                            studentNumber = studentNum
+                            isLoggedIn = true
+                            isAdmin = false
+                            isProfileSetupComplete = sharedPreferences.getBoolean("is_profile_setup_complete_${studentNum}", false)
+                        }, onRegisterClick = { currentScreen = "Register" }, onAdminLoginClick = { currentScreen = "AdminLogin" })
                     }
                 }
             }

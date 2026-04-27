@@ -8,6 +8,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -26,6 +27,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
@@ -146,7 +149,7 @@ fun ProfileScreen(
                                     contentScale = ContentScale.Crop
                                 )
                             }
-                            
+
                             if (viewModel.isEditMode) {
                                 Surface(
                                     shape = CircleShape,
@@ -200,6 +203,26 @@ fun ProfileScreen(
                 }
             }
         }
+
+        if (uiState is ProfileUiState.Loading && viewModel.isEditMode) {
+            Dialog(
+                onDismissRequest = { },
+                properties = DialogProperties(dismissOnBackPress = false, dismissOnClickOutside = false)
+            ) {
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier
+                        .size(100.dp)
+                        .background(MaterialTheme.colorScheme.surface, shape = RoundedCornerShape(8.dp))
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        CircularProgressIndicator(modifier = Modifier.size(32.dp))
+                        Spacer(Modifier.height(8.dp))
+                        Text("Saving...", style = MaterialTheme.typography.labelSmall)
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -246,20 +269,21 @@ fun EditSection(viewModel: ProfileViewModel) {
         EditField("Last Name", viewModel.lastName, { viewModel.lastName = it }, isEditable = false)
 
         ProfileSectionHeader("Personal Information", Icons.Default.Info)
+        EditField("Student Number *", viewModel.studentNumber, { viewModel.studentNumber = it })
         EditField("Sex at Birth *", viewModel.sexAtBirth, { viewModel.sexAtBirth = it })
         EditField("Nationality *", viewModel.nationality, { viewModel.nationality = it })
         EditField("Date of Birth", viewModel.dateOfBirth, { viewModel.dateOfBirth = it }, isEditable = false)
 
-        ProfileSectionHeader("Present Address", Icons.Default.Home)
+        ProfileSectionHeader("Contact Information", Icons.Default.ContactPhone)
         EditField("Province *", viewModel.presentProvince, { viewModel.presentProvince = it })
         EditField("City / Municipality *", viewModel.presentCity, { viewModel.presentCity = it })
         EditField("Barangay *", viewModel.presentBarangay, { viewModel.presentBarangay = it })
         EditField("House Number / Street / Subdivision / Sitio *", viewModel.presentHouse, { viewModel.presentHouse = it })
         EditField("ZIP Code *", viewModel.presentZip, { viewModel.presentZip = it }, keyboardType = KeyboardType.Number)
 
-        ProfileSectionHeader("Contact Information", Icons.Default.ContactPhone)
+        ProfileSectionHeader("Contact Details", Icons.Default.ContactPhone)
         EditField("Primary Mobile Number *", viewModel.primaryMobileNumber, { viewModel.primaryMobileNumber = it })
-        EditField("Primary Email Address", viewModel.primaryEmailAddress, { viewModel.primaryEmailAddress = it }, isEditable = false)
+        EditField("Primary Email Address", viewModel.primaryEmailAddress, { viewModel.primaryEmailAddress = it })
 
         ProfileSectionHeader("Father's Information", Icons.Default.AccountCircle)
         EditField("First Name *", viewModel.fatherFirstName, { viewModel.fatherFirstName = it })

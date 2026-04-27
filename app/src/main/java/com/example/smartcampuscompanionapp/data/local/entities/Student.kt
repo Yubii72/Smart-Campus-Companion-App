@@ -2,10 +2,12 @@ package com.example.smartcampuscompanionapp.data.local.entities
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import java.util.UUID
 
 @Entity(tableName = "students")
 data class Student(
-    @PrimaryKey val studentNumber: String = "",
+    @PrimaryKey val id: String = UUID.randomUUID().toString(),
+    val studentNumber: String = "",
     val password: String = "",
     
     // Personal Information

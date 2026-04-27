@@ -27,6 +27,7 @@ class ProfileViewModel(private val repository: StudentRepository) : ViewModel() 
     var isEditMode by mutableStateOf(false)
 
     // State for all fields
+    var id by mutableStateOf("")
     var firstName by mutableStateOf("")
     var middleName by mutableStateOf("")
     var lastName by mutableStateOf("")
@@ -66,12 +67,17 @@ class ProfileViewModel(private val repository: StudentRepository) : ViewModel() 
     var section by mutableStateOf("")
     var profileImageUrl by mutableStateOf<String?>(null)
 
-    fun loadProfile(studentNum: String) {
+    fun loadProfile(identifier: String) {
         _uiState.value = ProfileUiState.Loading
         viewModelScope.launch {
             try {
-                val student = repository.getStudentByNumber(studentNum)
+                // Try looking up by ID first (preferred), then by studentNumber as fallback
+                val student = repository.getStudentById(identifier) 
+                    ?: repository.getStudentByNumber(identifier)
+                    ?: repository.getStudentByEmail(identifier)
+
                 if (student != null) {
+                    id = student.id
                     studentNumber = student.studentNumber
                     password = student.password
                     firstName = student.firstName
@@ -124,6 +130,7 @@ class ProfileViewModel(private val repository: StudentRepository) : ViewModel() 
         viewModelScope.launch {
             try {
                 val updatedStudent = Student(
+                    id = id,
                     studentNumber = studentNumber,
                     password = password,
                     firstName = firstName,

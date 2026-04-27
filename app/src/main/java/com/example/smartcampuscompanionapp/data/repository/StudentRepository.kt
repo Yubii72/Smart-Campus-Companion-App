@@ -11,6 +11,14 @@ class StudentRepository(private val studentDao: StudentDao) {
         return studentDao.getStudentByNumber(studentNumber)
     }
 
+    suspend fun getStudentById(id: String): Student? {
+        return studentDao.getStudentById(id)
+    }
+
+    suspend fun getStudentByEmail(email: String): Student? {
+        return studentDao.getStudentByEmail(email)
+    }
+
     suspend fun insertStudent(student: Student) {
         studentDao.insertStudent(student)
     }

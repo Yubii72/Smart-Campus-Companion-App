@@ -60,7 +60,7 @@ fun RegisterScreen(
             OutlinedTextField(
                 value = studentNumber,
                 onValueChange = { studentNumber = it },
-                label = { Text("Student Number") },
+                label = { Text("Student Number / Email") },
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp),
                 enabled = uiState !is LoginUiState.Loading,
@@ -117,7 +117,8 @@ fun RegisterScreen(
                             studentNumber = studentNumber,
                             password = password,
                             firstName = firstName,
-                            lastName = lastName
+                            lastName = lastName,
+                            primaryEmailAddress = if (studentNumber.contains("@")) studentNumber else ""
                         )
                         viewModel.register(newStudent)
                     }

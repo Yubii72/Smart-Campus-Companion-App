@@ -65,6 +65,10 @@ dependencies {
     // WorkManager
     implementation(libs.androidx.work.runtime.ktx)
 
+    // Biometric
+    implementation(libs.androidx.biometric)
+    implementation(libs.androidx.fragment)
+
     // Coil
     implementation(libs.coil.compose)
     implementation(libs.coil.network)

@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.smartcampuscompanionapp.data.local.entities.Student
 import com.example.smartcampuscompanionapp.data.repository.AuthRepository
 import com.example.smartcampuscompanionapp.data.repository.StudentRepository
+import com.example.smartcampuscompanionapp.data.repository.FirebaseStudentRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -13,13 +14,13 @@ import kotlinx.coroutines.launch
 
 class LoginViewModel(
     private val repository: StudentRepository,
-    private val authRepository: AuthRepository
+    private val authRepository: AuthRepository,
+    private val firebaseStudentRepository: FirebaseStudentRepository = FirebaseStudentRepository()
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<LoginUiState>(LoginUiState.Idle)
     val uiState: StateFlow<LoginUiState> = _uiState.asStateFlow()
 
-    // Hardcoded Admin Credentials
     private val ADMIN_USERNAME = "admin"
     private val ADMIN_PASSWORD = "admin123"
 
@@ -32,40 +33,31 @@ class LoginViewModel(
         _uiState.value = LoginUiState.Loading
 
         viewModelScope.launch {
-            // Check for hardcoded admin first
             if (studentNumber.lowercase() == ADMIN_USERNAME && password == ADMIN_PASSWORD) {
                 _uiState.value = LoginUiState.Success(studentNumber)
                 return@launch
             }
 
-            // Otherwise, check the local database for students
-            val student = repository.getStudentByNumber(studentNumber)
+            val student = repository.getStudentByNumber(studentNumber) ?: repository.getStudentByEmail(studentNumber)
             if (student != null && student.password == password) {
-                _uiState.value = LoginUiState.Success(studentNumber)
+                _uiState.value = LoginUiState.Success(student.id) // Return internal ID
             } else {
                 _uiState.value = LoginUiState.Error("Invalid username or password")
             }
         }
     }
 
-    fun signInWithGoogle(idToken: String) {
+    fun register(student: Student) {
         _uiState.value = LoginUiState.Loading
         viewModelScope.launch {
-            val result = authRepository.signInWithGoogle(idToken)
-            if (result.isSuccess) {
-                val user = result.getOrNull()
-                _uiState.value = LoginUiState.Success(user?.displayName ?: user?.email ?: "Google User")
-            } else {
-                val exception = result.exceptionOrNull()
-                exception?.printStackTrace()
-                _uiState.value = LoginUiState.Error(exception?.message ?: "Google Sign-In failed")
+            try {
+                repository.insertStudent(student)
+                // Sync to Firebase so admin can see it
+                firebaseStudentRepository.saveStudent(student)
+                _uiState.value = LoginUiState.Success(student.id) // Return internal ID
+            } catch (e: Exception) {
+                _uiState.value = LoginUiState.Error(e.message ?: "Registration failed")
             }
-        }
-    }
-
-    fun register(student: Student) {
-        viewModelScope.launch {
-            repository.insertStudent(student)
         }
     }
 
@@ -75,6 +67,47 @@ class LoginViewModel(
 
     fun setError(message: String) {
         _uiState.value = LoginUiState.Error(message)
+    }
+
+    fun signInWithGoogle(idToken: String) {
+        _uiState.value = LoginUiState.Loading
+        viewModelScope.launch {
+            val result = authRepository.signInWithGoogle(idToken)
+            if (result.isSuccess) {
+                val user = result.getOrNull()
+                val email = user?.email ?: ""
+                val displayName = user?.displayName ?: ""
+                val photoUrl = user?.photoUrl?.toString()
+                val uid = user?.uid ?: ""
+                
+                // Check if student exists locally by UID
+                val existingStudent = repository.getStudentById(uid)
+                if (existingStudent == null) {
+                    val names = displayName.split(" ")
+                    val firstName = names.firstOrNull() ?: ""
+                    val lastName = if (names.size > 1) names.last() else ""
+                    
+                    val newStudent = Student(
+                        id = uid,
+                        studentNumber = "", // User must fill this during setup
+                        firstName = firstName,
+                        lastName = lastName,
+                        primaryEmailAddress = email,
+                        profileImageUrl = photoUrl
+                    )
+                    repository.insertStudent(newStudent)
+                    firebaseStudentRepository.saveStudent(newStudent)
+                } else if (existingStudent.profileImageUrl == null && photoUrl != null) {
+                    // Update profile image if it was null
+                    val updatedStudent = existingStudent.copy(profileImageUrl = photoUrl)
+                    repository.insertStudent(updatedStudent)
+                }
+                
+                _uiState.value = LoginUiState.Success(uid)
+            } else {
+                _uiState.value = LoginUiState.Error(result.exceptionOrNull()?.message ?: "Google Sign-In failed")
+            }
+        }
     }
 }
 

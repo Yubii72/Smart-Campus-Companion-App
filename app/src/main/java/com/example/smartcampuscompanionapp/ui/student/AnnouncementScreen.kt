@@ -4,6 +4,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -13,6 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.text.style.TextAlign
 import com.example.smartcampuscompanionapp.data.local.entities.Announcement
 import com.example.smartcampuscompanionapp.ui.viewmodel.AnnouncementViewModel
 import java.text.SimpleDateFormat
@@ -28,11 +30,12 @@ fun AnnouncementScreen(
     val announcements by viewModel.allAnnouncements.collectAsState()
     var showAddDialog by remember { mutableStateOf(false) }
     var announcementToEdit by remember { mutableStateOf<Announcement?>(null) }
+    var announcementToDelete by remember { mutableStateOf<Announcement?>(null) }
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Announcements") },
+                title = { Text("Announcements", fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Back")
@@ -44,14 +47,57 @@ fun AnnouncementScreen(
                             Icon(Icons.Default.Add, contentDescription = "Add Announcement")
                         }
                     }
-                }
+                },
+                colors = if (isAdmin) {
+                    TopAppBarDefaults.topAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.errorContainer,
+                        titleContentColor = MaterialTheme.colorScheme.onErrorContainer,
+                        navigationIconContentColor = MaterialTheme.colorScheme.onErrorContainer,
+                        actionIconContentColor = MaterialTheme.colorScheme.onErrorContainer
+                    )
+                } else TopAppBarDefaults.topAppBarColors()
             )
         }
     ) { paddingValues ->
         Box(modifier = Modifier.padding(paddingValues)) {
             if (announcements.isEmpty()) {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text("No announcements yet.", style = MaterialTheme.typography.bodyLarge)
+                Box(modifier = Modifier.fillMaxSize().padding(24.dp), contentAlignment = Alignment.Center) {
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(16.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                        )
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(48.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Campaign,
+                                contentDescription = null,
+                                modifier = Modifier.size(64.dp),
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+                            )
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Text(
+                                text = "No announcements yet",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.SemiBold,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                text = "Stay tuned for campus updates!",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                textAlign = TextAlign.Center
+                            )
+                        }
+                    }
                 }
             } else {
                 LazyColumn(
@@ -65,7 +111,7 @@ fun AnnouncementScreen(
                             announcement = announcement,
                             isAdmin = isAdmin,
                             onEdit = { announcementToEdit = announcement },
-                            onDelete = { viewModel.deleteAnnouncement(announcement) },
+                            onDelete = { announcementToDelete = announcement },
                             onMarkAsRead = { viewModel.markAsRead(announcement) }
                         )
                     }
@@ -76,6 +122,7 @@ fun AnnouncementScreen(
         if (showAddDialog) {
             AnnouncementDialog(
                 onDismiss = { showAddDialog = false },
+                isAdmin = isAdmin,
                 onConfirm = { title, content ->
                     val date = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault()).format(Date())
                     viewModel.addAnnouncement(title, content, date)
@@ -88,10 +135,35 @@ fun AnnouncementScreen(
             AnnouncementDialog(
                 initialTitle = announcement.title,
                 initialContent = announcement.content,
+                isAdmin = isAdmin,
                 onDismiss = { announcementToEdit = null },
                 onConfirm = { title, content ->
                     viewModel.updateAnnouncement(announcement.copy(title = title, content = content))
                     announcementToEdit = null
+                }
+            )
+        }
+
+        announcementToDelete?.let { announcement ->
+            AlertDialog(
+                onDismissRequest = { announcementToDelete = null },
+                title = { Text("Delete Announcement") },
+                text = { Text("Are you sure you want to delete this announcement? This action cannot be undone.") },
+                confirmButton = {
+                    Button(
+                        onClick = {
+                            viewModel.deleteAnnouncement(announcement)
+                            announcementToDelete = null
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                    ) {
+                        Text("Delete", color = Color.White)
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { announcementToDelete = null }) {
+                        Text("Cancel")
+                    }
                 }
             )
         }
@@ -143,16 +215,16 @@ fun AnnouncementCard(
                     Text(
                         text = announcement.date,
                         style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.secondary
+                        color = if (isAdmin) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.secondary
                     )
                 }
                 if (isAdmin) {
                     Row {
                         IconButton(onClick = onEdit) {
-                            Icon(Icons.Default.Edit, contentDescription = "Edit", modifier = Modifier.size(20.dp))
+                            Icon(Icons.Default.Edit, contentDescription = "Edit", modifier = Modifier.size(20.dp), tint = MaterialTheme.colorScheme.error)
                         }
                         IconButton(onClick = onDelete) {
-                            Icon(Icons.Default.Delete, contentDescription = "Delete", modifier = Modifier.size(20.dp))
+                            Icon(Icons.Default.Delete, contentDescription = "Delete", modifier = Modifier.size(20.dp), tint = MaterialTheme.colorScheme.error)
                         }
                     }
                 }
@@ -166,7 +238,7 @@ fun AnnouncementCard(
             Text(
                 text = "By: ${announcement.author}",
                 style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.outline
+                color = if (isAdmin) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.outline
             )
         }
     }
@@ -176,6 +248,7 @@ fun AnnouncementCard(
 fun AnnouncementDialog(
     initialTitle: String = "",
     initialContent: String = "",
+    isAdmin: Boolean,
     onDismiss: () -> Unit,
     onConfirm: (String, String) -> Unit
 ) {
@@ -205,14 +278,15 @@ fun AnnouncementDialog(
         confirmButton = {
             Button(
                 onClick = { if (title.isNotBlank() && content.isNotBlank()) onConfirm(title, content) },
-                enabled = title.isNotBlank() && content.isNotBlank()
+                enabled = title.isNotBlank() && content.isNotBlank(),
+                colors = if (isAdmin) ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error) else ButtonDefaults.buttonColors()
             ) {
                 Text("Confirm")
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancel")
+                Text("Cancel", color = if (isAdmin) MaterialTheme.colorScheme.error else Color.Unspecified)
             }
         }
     )

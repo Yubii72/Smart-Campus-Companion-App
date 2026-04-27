@@ -14,6 +14,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import com.example.smartcampuscompanionapp.data.local.entities.Student
 import com.example.smartcampuscompanionapp.ui.viewmodel.LoginViewModel
+import com.example.smartcampuscompanionapp.ui.viewmodel.LoginUiState
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -27,7 +28,14 @@ fun RegisterScreen(
     var firstName by remember { mutableStateOf("") }
     var lastName by remember { mutableStateOf("") }
     
-    var showError by remember { mutableStateOf<String?>(null) }
+    val uiState by viewModel.uiState.collectAsState()
+
+    LaunchedEffect(uiState) {
+        if (uiState is LoginUiState.Success) {
+            onRegisterSuccess()
+            viewModel.resetState()
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -52,9 +60,11 @@ fun RegisterScreen(
             OutlinedTextField(
                 value = studentNumber,
                 onValueChange = { studentNumber = it },
-                label = { Text("Student Number") },
+                label = { Text("Student Number / Email") },
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp)
+                shape = RoundedCornerShape(12.dp),
+                enabled = uiState !is LoginUiState.Loading,
+                isError = uiState is LoginUiState.Error
             )
             Spacer(modifier = Modifier.height(16.dp))
             OutlinedTextField(
@@ -62,7 +72,9 @@ fun RegisterScreen(
                 onValueChange = { firstName = it },
                 label = { Text("First Name") },
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp)
+                shape = RoundedCornerShape(12.dp),
+                enabled = uiState !is LoginUiState.Loading,
+                isError = uiState is LoginUiState.Error
             )
             Spacer(modifier = Modifier.height(16.dp))
             OutlinedTextField(
@@ -70,7 +82,9 @@ fun RegisterScreen(
                 onValueChange = { lastName = it },
                 label = { Text("Last Name") },
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp)
+                shape = RoundedCornerShape(12.dp),
+                enabled = uiState !is LoginUiState.Loading,
+                isError = uiState is LoginUiState.Error
             )
             Spacer(modifier = Modifier.height(16.dp))
             OutlinedTextField(
@@ -79,12 +93,14 @@ fun RegisterScreen(
                 label = { Text("Password") },
                 visualTransformation = PasswordVisualTransformation(),
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp)
+                shape = RoundedCornerShape(12.dp),
+                isError = uiState is LoginUiState.Error,
+                enabled = uiState !is LoginUiState.Loading
             )
             
-            if (showError != null) {
+            if (uiState is LoginUiState.Error) {
                 Text(
-                    text = showError!!,
+                    text = (uiState as LoginUiState.Error).message,
                     color = MaterialTheme.colorScheme.error,
                     modifier = Modifier.padding(top = 8.dp)
                 )
@@ -95,36 +111,27 @@ fun RegisterScreen(
             Button(
                 onClick = {
                     if (studentNumber.isBlank() || password.isBlank() || firstName.isBlank() || lastName.isBlank()) {
-                        showError = "All fields are required"
+                        viewModel.setError("All fields are required")
                     } else {
                         val newStudent = Student(
                             studentNumber = studentNumber,
                             password = password,
                             firstName = firstName,
                             lastName = lastName,
-                            sexAtBirth = "",
-                            nationality = "",
-                            dateOfBirth = "",
-                            presentAddress = "",
-                            primaryMobileNumber = "",
-                            primaryEmailAddress = "",
-                            fathersName = "",
-                            mothersName = "",
-                            college = "",
-                            program = "",
-                            curriculum = "",
-                            yearLevel = "",
-                            section = ""
+                            primaryEmailAddress = if (studentNumber.contains("@")) studentNumber else ""
                         )
                         viewModel.register(newStudent)
-                        onRegisterSuccess()
-                        viewModel.resetState()
                     }
                 },
                 modifier = Modifier.fillMaxWidth().height(56.dp),
-                shape = RoundedCornerShape(12.dp)
+                shape = RoundedCornerShape(12.dp),
+                enabled = uiState !is LoginUiState.Loading
             ) {
-                Text("Register")
+                if (uiState is LoginUiState.Loading) {
+                    CircularProgressIndicator(modifier = Modifier.size(24.dp), color = MaterialTheme.colorScheme.onPrimary)
+                } else {
+                    Text("Register")
+                }
             }
         }
     }

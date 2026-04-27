@@ -1,182 +1,292 @@
 package com.example.smartcampuscompanionapp.ui.admin
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.blur
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.smartcampuscompanionapp.ui.theme.AdminArgonBubbleColor
+import com.example.smartcampuscompanionapp.ui.theme.AdminArgonGradientEnd
+import com.example.smartcampuscompanionapp.ui.theme.AdminArgonGradientStart
+import com.example.smartcampuscompanionapp.ui.viewmodel.AnnouncementViewModel
 
-data class NavigationItem(
+/**
+ * DATA CLASS FOR ADMIN ACTIONS
+ */
+data class AdminAction(
     val title: String,
     val icon: ImageVector,
     val description: String
 )
 
+/**
+ * ADMIN DASHBOARD SCREEN
+ * Main portal for administrative controls with Argon-style theme
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AdminDashboardScreen(
+    announcementViewModel: AnnouncementViewModel,
     onNavigationItemClick: (String) -> Unit = {}
 ) {
-    val adminItems = listOf(
-        NavigationItem(
-            title = "Manage Announcements",
-            icon = Icons.Default.Campaign,
-            description = "Post and edit campus updates"
-        ),
-        NavigationItem(
-            title = "Student Records",
-            icon = Icons.Default.People,
-            description = "View and manage student data"
-        ),
-        NavigationItem(
-            title = "System Settings",
-            icon = Icons.Default.AdminPanelSettings,
-            description = "Configure app-wide parameters"
-        ),
-        NavigationItem(
-            title = "Logout",
-            icon = Icons.Default.Logout,
-            description = "Exit admin session"
-        )
+    val announcements by announcementViewModel.allAnnouncements.collectAsState()
+    var showLogoutDialog by remember { mutableStateOf(false) }
+    
+    // LIST OF ADMINISTRATIVE ACTIONS
+    val adminActions = listOf(
+        AdminAction("Manage Announcements", Icons.Default.Campaign, "Post updates for students"),
+        AdminAction("Student Records", Icons.Default.People, "Manage campus users"),
+        AdminAction("Campus Info", Icons.Default.Info, "Edit college details"),
+        AdminAction("System Settings", Icons.Default.Settings, "App configurations")
     )
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = "Admin Portal",
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background) // ADAPTIVE BACKGROUND
+    ) {
+        // ARGON HEADER WITH GRADIENT AND BUBBLES
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(260.dp)
+                .clip(RoundedCornerShape(bottomStart = 32.dp, bottomEnd = 32.dp))
+                .background(
+                    brush = Brush.verticalGradient(
+                        colors = listOf(AdminArgonGradientStart, AdminArgonGradientEnd)
                     )
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.errorContainer,
-                    titleContentColor = MaterialTheme.colorScheme.onErrorContainer
                 )
+        ) {
+            // DECORATIVE BACKGROUND BUBBLES
+            Box(
+                modifier = Modifier
+                    .size(250.dp)
+                    .offset(x = (-80).dp, y = (-80).dp)
+                    .clip(CircleShape)
+                    .background(Color.White.copy(alpha = 0.1f))
+                    .blur(40.dp)
             )
+            Box(
+                modifier = Modifier
+                    .size(180.dp)
+                    .align(Alignment.BottomEnd)
+                    .offset(x = 40.dp, y = 40.dp)
+                    .clip(CircleShape)
+                    .background(Color.White.copy(alpha = 0.1f))
+                    .blur(30.dp)
+            )
+
+            // HEADER CONTENT (Title and Logout)
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(24.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Argon Admin",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White
+                    )
+                    IconButton(onClick = { showLogoutDialog = true }) {
+                        Icon(Icons.Default.Logout, contentDescription = "Logout", tint = Color.White)
+                    }
+                }
+                
+                Spacer(modifier = Modifier.height(32.dp))
+                
+                Text(
+                    "Welcome back,",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = Color.White.copy(alpha = 0.8f)
+                )
+                Text(
+                    "Administrator",
+                    style = MaterialTheme.typography.headlineMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White
+                )
+            }
         }
-    ) { paddingValues ->
+
+        // SCROLLABLE BODY CONTENT
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
-                .padding(horizontal = 16.dp)
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 20.dp)
         ) {
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // SECTION: CONTROLS
+            Text(
+                text = "ADMINISTRATIVE CONTROLS",
+                style = MaterialTheme.typography.labelLarge,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.primary
+            )
             
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 24.dp),
-                shape = RoundedCornerShape(20.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.errorContainer
-                )
-            ) {
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // GRID OF ACTION CARDS
+            adminActions.chunked(2).forEach { rowItems ->
                 Row(
-                    modifier = Modifier.padding(24.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.SupervisorAccount,
-                        contentDescription = null,
-                        modifier = Modifier.size(48.dp),
-                        tint = MaterialTheme.colorScheme.onErrorContainer
-                    )
-                    Spacer(modifier = Modifier.width(16.dp))
-                    Column {
-                        Text(
-                            text = "Administrator Mode",
-                            style = MaterialTheme.typography.headlineSmall,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onErrorContainer
-                        )
-                        Text(
-                            text = "Manage your campus ecosystem here.",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onErrorContainer.copy(alpha = 0.8f)
+                    rowItems.forEach { item ->
+                        AdminActionCard(
+                            item = item,
+                            modifier = Modifier.weight(1f),
+                            onClick = { onNavigationItemClick(item.title) }
                         )
                     }
                 }
+                Spacer(modifier = Modifier.height(16.dp))
             }
 
+            Spacer(modifier = Modifier.height(8.dp))
+            
+            // SECTION: STATS OVERVIEW
             Text(
-                text = "Administrative Controls",
-                style = MaterialTheme.typography.titleMedium,
+                text = "SYSTEM OVERVIEW",
+                style = MaterialTheme.typography.labelLarge,
                 fontWeight = FontWeight.SemiBold,
-                modifier = Modifier.padding(bottom = 16.dp)
+                color = MaterialTheme.colorScheme.primary
             )
+            
+            Spacer(modifier = Modifier.height(12.dp))
 
-            LazyVerticalGrid(
-                columns = GridCells.Fixed(2),
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-                modifier = Modifier.fillMaxWidth()
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                items(adminItems) { item ->
-                    NavigationCard(
-                        item = item,
-                        onClick = { onNavigationItemClick(item.title) }
-                    )
+                StatCard("Active Announcements", "${announcements.size}", Modifier.weight(1f))
+                StatCard("System Status", "Healthy", Modifier.weight(1f))
+            }
+
+            Spacer(modifier = Modifier.height(32.dp))
+        }
+    }
+
+    // LOGOUT CONFIRMATION DIALOG
+    if (showLogoutDialog) {
+        AlertDialog(
+            onDismissRequest = { showLogoutDialog = false },
+            title = { Text("Logout Confirmation") },
+            text = { Text("Are you sure you want to logout from the Admin portal?") },
+            confirmButton = {
+                Button(
+                    onClick = { 
+                        showLogoutDialog = false
+                        onNavigationItemClick("Logout")
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                ) {
+                    Text("Logout", color = Color.White)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showLogoutDialog = false }) {
+                    Text("Cancel")
                 }
             }
-        }
+        )
     }
 }
 
+/**
+ * REUSABLE ACTION CARD COMPONENT
+ */
 @Composable
-fun NavigationCard(
-    item: NavigationItem,
+fun AdminActionCard(
+    item: AdminAction,
+    modifier: Modifier = Modifier,
     onClick: () -> Unit
 ) {
     Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(160.dp)
+        modifier = modifier
+            .height(120.dp)
             .clickable { onClick() },
-        shape = RoundedCornerShape(16.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
+            horizontalAlignment = Alignment.Start,
             verticalArrangement = Arrangement.Center
         ) {
-            Icon(
-                imageVector = item.icon,
-                contentDescription = null,
-                modifier = Modifier.size(32.dp),
-                tint = MaterialTheme.colorScheme.primary
-            )
+            Surface(
+                shape = CircleShape,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(40.dp)
+            ) {
+                Box(contentAlignment = Alignment.Center) {
+                    Icon(
+                        imageVector = item.icon,
+                        contentDescription = null,
+                        modifier = Modifier.size(20.dp),
+                        tint = MaterialTheme.colorScheme.onPrimary
+                    )
+                }
+            }
             Spacer(modifier = Modifier.height(12.dp))
             Text(
                 text = item.title,
                 style = MaterialTheme.typography.titleSmall,
                 fontWeight = FontWeight.Bold,
-                textAlign = TextAlign.Center
+                color = MaterialTheme.colorScheme.onSurface
             )
-            Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = item.description,
                 style = MaterialTheme.typography.bodySmall,
-                textAlign = TextAlign.Center,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                lineHeight = 14.sp
+                maxLines = 1
             )
+        }
+    }
+}
+
+/**
+ * REUSABLE STAT CARD COMPONENT
+ */
+@Composable
+fun StatCard(label: String, value: String, modifier: Modifier = Modifier) {
+    Card(
+        modifier = modifier,
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.4f)),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(label, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSecondaryContainer)
+            Text(value, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSecondaryContainer)
         }
     }
 }

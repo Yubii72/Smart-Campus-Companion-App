@@ -5,6 +5,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.tasks.await
 
 class FirebaseTaskRepository(private val firestore: FirebaseFirestore = FirebaseFirestore.getInstance()) {
@@ -16,7 +17,8 @@ class FirebaseTaskRepository(private val firestore: FirebaseFirestore = Firebase
             .whereEqualTo("studentNumber", studentNumber)
             .addSnapshotListener { snapshot, error ->
                 if (error != null) {
-                    close(error)
+                    android.util.Log.e("Firestore", "Error fetching tasks: ${error.message}")
+                    trySend(emptyList())
                     return@addSnapshotListener
                 }
                 if (snapshot != null) {
@@ -25,6 +27,9 @@ class FirebaseTaskRepository(private val firestore: FirebaseFirestore = Firebase
                 }
             }
         awaitClose { subscription.remove() }
+    }.catch { e ->
+        android.util.Log.e("Firestore", "Tasks Flow caught error: ${e.message}")
+        emit(emptyList())
     }
 
     suspend fun addTask(task: Task): Result<Unit> {
@@ -32,6 +37,7 @@ class FirebaseTaskRepository(private val firestore: FirebaseFirestore = Firebase
             tasksCollection.document(task.id).set(task).await()
             Result.success(Unit)
         } catch (e: Exception) {
+            android.util.Log.e("Firestore", "Error adding task: ${e.message}")
             Result.failure(e)
         }
     }

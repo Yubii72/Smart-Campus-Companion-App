@@ -2,7 +2,8 @@ package com.example.smartcampuscompanionapp
 
 import android.content.Context
 import android.os.Bundle
-import androidx.activity.ComponentActivity
+import android.os.Build
+import androidx.fragment.app.FragmentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
@@ -18,17 +19,8 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.CalendarToday
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.NavigationBarItemDefaults
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -48,8 +40,10 @@ import com.example.smartcampuscompanionapp.data.repository.AuthRepository
 import com.example.smartcampuscompanionapp.data.repository.FirebaseAnnouncementRepository
 import com.example.smartcampuscompanionapp.data.repository.FirebaseTaskRepository
 import com.example.smartcampuscompanionapp.data.repository.StudentRepository
+import com.example.smartcampuscompanionapp.data.repository.FirebaseStudentRepository
 import com.example.smartcampuscompanionapp.ui.admin.AdminDashboardScreen
 import com.example.smartcampuscompanionapp.ui.admin.AdminLoginScreen
+import com.example.smartcampuscompanionapp.ui.admin.StudentRecordsScreen
 import com.example.smartcampuscompanionapp.ui.campus_info.College
 import com.example.smartcampuscompanionapp.ui.campus_info.CollegeInfoScreen
 import com.example.smartcampuscompanionapp.ui.campus_info.CollegeListScreen
@@ -62,6 +56,7 @@ import com.example.smartcampuscompanionapp.ui.student.DashboardScreen
 import com.example.smartcampuscompanionapp.ui.student.LoginScreen
 import com.example.smartcampuscompanionapp.ui.student.ProfileScreen
 import com.example.smartcampuscompanionapp.ui.student.RegisterScreen
+import com.example.smartcampuscompanionapp.ui.student.SetupProfileScreen
 import com.example.smartcampuscompanionapp.ui.theme.SmartCampusCompanionAppTheme
 import com.example.smartcampuscompanionapp.ui.viewmodel.AnnouncementViewModel
 import com.example.smartcampuscompanionapp.ui.viewmodel.AnnouncementViewModelFactory
@@ -79,20 +74,29 @@ import android.app.NotificationManager
 import androidx.core.app.NotificationCompat
 import java.util.concurrent.TimeUnit
 
+// NAVIGATION ROUTES
 enum class MainTab(val title: String, val icon: ImageVector) {
     Dashboard("Dashboard", Icons.Default.Home),
     Tasks("Tasks", Icons.Default.CalendarToday),
     Profile("Profile", Icons.Default.Person)
 }
 
-class MainActivity : ComponentActivity() {
+enum class AdminTab(val title: String, val icon: ImageVector) {
+    Dashboard("Dashboard", Icons.Default.Home),
+    Announcements("Announcements", Icons.Default.Campaign),
+    Students("Records", Icons.Default.People)
+}
 
+class MainActivity : FragmentActivity() {
+
+    // DATA INITIALIZATION
     private val database by lazy { AppDatabase.getDatabase(this) }
     private val studentRepository by lazy { StudentRepository(database.studentDao()) }
     private val announcementRepository by lazy { AnnouncementRepository(database.announcementDao()) }
     private val authRepository by lazy { AuthRepository() }
     private val firebaseTaskRepository by lazy { FirebaseTaskRepository() }
     private val firebaseAnnouncementRepository by lazy { FirebaseAnnouncementRepository() }
+    private val firebaseStudentRepository by lazy { FirebaseStudentRepository() }
     
     private val loginViewModel: LoginViewModel by viewModels {
         LoginViewModelFactory(studentRepository, authRepository)
@@ -111,14 +115,12 @@ class MainActivity : ComponentActivity() {
 
         val sharedPreferences = getSharedPreferences("smart_campus_prefs", Context.MODE_PRIVATE)
 
-        // Notification permission request (Android 13+)
+        // NOTIFICATION PERMISSIONS (Android 13+)
         val requestPermissionLauncher = registerForActivityResult(
             ActivityResultContracts.RequestPermission()
-        ) { isGranted: Boolean ->
-            // Handle permission result if needed
-        }
+        ) { isGranted: Boolean -> }
 
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) !=
                 PackageManager.PERMISSION_GRANTED
             ) {
@@ -131,22 +133,29 @@ class MainActivity : ComponentActivity() {
             val systemInDarkTheme = isSystemInDarkTheme()
             var isDarkTheme by remember { mutableStateOf(systemInDarkTheme) }
 
-            SmartCampusCompanionAppTheme(darkTheme = isDarkTheme) {
+            var hasCompletedOnboarding by remember {
+                mutableStateOf(sharedPreferences.getBoolean("has_completed_onboarding", false))
+            }
+            var isLoggedIn by remember {
+                mutableStateOf(sharedPreferences.getBoolean("is_logged_in", false))
+            }
+            var isAdmin by remember {
+                mutableStateOf(sharedPreferences.getBoolean("is_admin", false))
+            }
+            var studentNumber by remember { mutableStateOf(sharedPreferences.getString("student_number", "") ?: "") }
+            var isProfileSetupComplete by remember {
+                mutableStateOf(sharedPreferences.getBoolean("is_profile_setup_complete_${studentNumber}", false))
+            }
+
+            // THEME SWITCHER (Admin Argon vs Student)
+            SmartCampusCompanionAppTheme(
+                darkTheme = isDarkTheme,
+                isAdmin = isAdmin && isLoggedIn 
+            ) {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    var hasCompletedOnboarding by remember {
-                        mutableStateOf(sharedPreferences.getBoolean("has_completed_onboarding", false))
-                    }
-                    var isLoggedIn by remember {
-                        mutableStateOf(sharedPreferences.getBoolean("is_logged_in", false))
-                    }
-                    var isAdmin by remember {
-                        mutableStateOf(sharedPreferences.getBoolean("is_admin", false))
-                    }
-                    var studentNumber by remember { mutableStateOf(sharedPreferences.getString("student_number", "") ?: "") }
-
                     val taskViewModel: TaskViewModel? = if (isLoggedIn && !isAdmin && studentNumber.isNotBlank()) {
                         val factory = TaskViewModelFactory(firebaseTaskRepository, studentNumber)
                         androidx.lifecycle.viewmodel.compose.viewModel(
@@ -155,37 +164,24 @@ class MainActivity : ComponentActivity() {
                         )
                     } else null
 
-                    // Subscribe to announcements topic
+                    // FIREBASE SYNC (Cloud Listeners)
                     LaunchedEffect(isLoggedIn) {
                         if (isLoggedIn) {
                             FirebaseMessaging.getInstance().subscribeToTopic("announcements")
-                                .addOnCompleteListener { task ->
-                                    if (task.isSuccessful) {
-                                        android.util.Log.d("FCM", "Subscribed to announcements")
-                                    } else {
-                                        android.util.Log.e("FCM", "Subscription failed", task.exception)
-                                    }
-                                }
-                            if (studentNumber.isNotBlank()) {
+                            if (studentNumber.isNotBlank() && !isAdmin) {
                                 scheduleDeadlineWorker(studentNumber)
                             }
-                            
-                            // Listen for new announcements in Firestore to show local notifications
                             if (!isAdmin) {
-                                // Set start time with a small buffer to avoid showing old ones
                                 val startTime = System.currentTimeMillis() - 5000
                                 FirebaseFirestore.getInstance().collection("announcements")
                                     .addSnapshotListener { snapshots, e ->
                                         if (e != null) return@addSnapshotListener
-                                        
                                         for (dc in snapshots!!.documentChanges) {
                                             if (dc.type == DocumentChange.Type.ADDED) {
                                                 val timestamp = dc.document.getLong("timestamp") ?: 0L
-                                                // Only notify if it's a truly new announcement posted after app start
                                                 if (timestamp > startTime) {
                                                     val title = dc.document.getString("title") ?: "New Announcement"
                                                     val content = dc.document.getString("content") ?: ""
-                                                    android.util.Log.d("NotificationDebug", "Triggering notification for: $title")
                                                     showAnnouncementNotification(title, content)
                                                 }
                                             }
@@ -197,9 +193,11 @@ class MainActivity : ComponentActivity() {
 
                     var currentScreen by remember { mutableStateOf("Auth") }
                     var currentTab by remember { mutableStateOf(MainTab.Dashboard) }
+                    var currentAdminTab by remember { mutableStateOf(AdminTab.Dashboard) }
                     var overlayScreen by remember { mutableStateOf<String?>(null) }
                     var selectedCollege by remember { mutableStateOf<College?>(null) }
 
+                    // ROLE-BASED LAYOUT
                     when {
                         !hasCompletedOnboarding -> OnboardingScreen(
                             onGetStarted = {
@@ -208,30 +206,110 @@ class MainActivity : ComponentActivity() {
                             }
                         )
                         isLoggedIn -> {
-                            if (isAdmin) {
-                                when (overlayScreen) {
-                                    "Announcements" -> AnnouncementScreen(
-                                        onBack = { overlayScreen = null },
-                                        viewModel = announcementViewModel,
-                                        isAdmin = true
-                                    )
-                                    else -> AdminDashboardScreen(
-                                        onNavigationItemClick = { item ->
-                                            when (item) {
-                                                "Logout" -> {
-                                                    sharedPreferences.edit { 
-                                                        putBoolean("is_logged_in", false)
-                                                        putBoolean("is_admin", false)
-                                                    }
-                                                    isLoggedIn = false
-                                                    isAdmin = false
-                                                }
-                                                "Manage Announcements" -> overlayScreen = "Announcements"
+                            if (!isProfileSetupComplete && !isAdmin) {
+                                SetupProfileScreen(
+                                    studentNumber = studentNumber,
+                                    viewModel = profileViewModel,
+                                    onComplete = {
+                                        sharedPreferences.edit { putBoolean("is_profile_setup_complete_${studentNumber}", true) }
+                                        isProfileSetupComplete = true
+                                    }
+                                )
+                            } else if (isAdmin) {
+                                // ADMIN UI
+                                Scaffold(
+                                    modifier = Modifier.fillMaxSize(),
+                                    contentWindowInsets = WindowInsets(0, 0, 0, 0),
+                                    bottomBar = {
+                                        NavigationBar {
+                                            AdminTab.entries.forEach { tab ->
+                                                NavigationBarItem(
+                                                    selected = currentAdminTab == tab,
+                                                    onClick = {
+                                                        overlayScreen = null
+                                                        currentAdminTab = tab
+                                                    },
+                                                    icon = { Icon(tab.icon, contentDescription = tab.title) },
+                                                    label = { Text(tab.title) }
+                                                )
                                             }
                                         }
-                                    )
+                                    }
+                                ) { paddingValues ->
+                                    Box(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
+                                        AnimatedContent(
+                                            targetState = overlayScreen,
+                                            modifier = Modifier.fillMaxSize(),
+                                            transitionSpec = { (fadeIn() + slideInHorizontally { it / 4 }) togetherWith (fadeOut() + slideOutHorizontally { -it / 4 }) },
+                                            label = "admin_overlay"
+                                        ) { overlay ->
+                                            when (overlay) {
+                                                "CollegeList" -> CollegeListScreen(
+                                                    onCollegeClick = { college ->
+                                                        selectedCollege = college
+                                                        overlayScreen = "CollegeInfo"
+                                                    },
+                                                    onBackClick = { overlayScreen = null }
+                                                )
+                                                "CollegeInfo" -> selectedCollege?.let { college ->
+                                                    CollegeInfoScreen(
+                                                        college = college,
+                                                        onBackClick = { overlayScreen = "CollegeList" }
+                                                    )
+                                                } ?: Box(Modifier.fillMaxSize())
+                                                "Settings" -> SettingsScreen(
+                                                    isDarkTheme = isDarkTheme,
+                                                    onThemeChange = { isDarkTheme = it },
+                                                    onLogout = {
+                                                        sharedPreferences.edit().putBoolean("is_logged_in", false).putBoolean("is_admin", false).putString("student_number", null).apply()
+                                                        isLoggedIn = false
+                                                        isAdmin = false
+                                                        overlayScreen = null
+                                                        studentNumber = ""
+                                                    },
+                                                    onBack = { overlayScreen = null }
+                                                )
+                                                null -> {
+                                                    AnimatedContent(
+                                                        targetState = currentAdminTab,
+                                                        modifier = Modifier.fillMaxSize(),
+                                                        transitionSpec = { (slideInHorizontally { width -> width / 4 } + fadeIn()) togetherWith (slideOutHorizontally { width -> -width / 4 } + fadeOut()) },
+                                                        label = "admin_tab_content"
+                                                    ) { tab ->
+                                                        when (tab) {
+                                                            AdminTab.Dashboard -> AdminDashboardScreen(
+                                                                announcementViewModel = announcementViewModel,
+                                                                onNavigationItemClick = { item ->
+                                                                    when (item) {
+                                                                        "Logout" -> {
+                                                                            sharedPreferences.edit { putBoolean("is_logged_in", false); putBoolean("is_admin", false); putString("student_number", null) }
+                                                                            isLoggedIn = false; isAdmin = false; studentNumber = ""
+                                                                        }
+                                                                        "Manage Announcements" -> currentAdminTab = AdminTab.Announcements
+                                                                        "Campus Info" -> overlayScreen = "CollegeList"
+                                                                        "System Settings" -> overlayScreen = "Settings"
+                                                                        "Student Records" -> currentAdminTab = AdminTab.Students
+                                                                    }
+                                                                }
+                                                            )
+                                                            AdminTab.Announcements -> AnnouncementScreen(
+                                                                onBack = { currentAdminTab = AdminTab.Dashboard },
+                                                                viewModel = announcementViewModel,
+                                                                isAdmin = true
+                                                            )
+                                                            AdminTab.Students -> StudentRecordsScreen(
+                                                                firebaseRepository = firebaseStudentRepository,
+                                                                onBack = { currentAdminTab = AdminTab.Dashboard }
+                                                            )
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
                                 }
                             } else {
+                                // STUDENT UI
                                 Scaffold(
                                     modifier = Modifier.fillMaxSize(),
                                     contentWindowInsets = WindowInsets(0, 0, 0, 0),
@@ -244,12 +322,7 @@ class MainActivity : ComponentActivity() {
                                                         overlayScreen = null
                                                         currentTab = tab
                                                     },
-                                                    icon = {
-                                                        Icon(
-                                                            imageVector = tab.icon,
-                                                            contentDescription = tab.title
-                                                        )
-                                                    },
+                                                    icon = { Icon(imageVector = tab.icon, contentDescription = tab.title) },
                                                     label = { Text(tab.title) },
                                                     colors = NavigationBarItemDefaults.colors()
                                                 )
@@ -257,189 +330,118 @@ class MainActivity : ComponentActivity() {
                                         }
                                     }
                                 ) { paddingValues ->
-                                    Box(
-                                        modifier = Modifier
-                                            .fillMaxSize()
-                                            .padding(paddingValues)
-                                    ) {
+                                    Box(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
                                         AnimatedContent(
                                             targetState = overlayScreen,
                                             modifier = Modifier.fillMaxSize(),
-                                            transitionSpec = {
-                                                (fadeIn() + slideInHorizontally { it / 4 }) togetherWith
-                                                        (fadeOut() + slideOutHorizontally { -it / 4 })
-                                            },
+                                            transitionSpec = { (fadeIn() + slideInHorizontally { it / 4 }) togetherWith (fadeOut() + slideOutHorizontally { -it / 4 }) },
                                             label = "overlay"
                                         ) { overlay ->
-                                        when (overlay) {
-                                            "Settings" -> SettingsScreen(
-                                                isDarkTheme = isDarkTheme,
-                                                onThemeChange = { isDarkTheme = it },
-                                                onLogout = {
-                                                    sharedPreferences.edit()
-                                                        .putBoolean("is_logged_in", false)
-                                                        .putBoolean("is_admin", false)
-                                                        .putString("student_number", null)
-                                                        .apply()
-                                                    isLoggedIn = false
-                                                    overlayScreen = null
-                                                    studentNumber = ""
-                                                },
-                                                onBack = { overlayScreen = null }
-                                            )
-                                            "Announcements" -> AnnouncementScreen(
-                                                onBack = { overlayScreen = null },
-                                                viewModel = announcementViewModel,
-                                                isAdmin = false
-                                            )
-                                            "CollegeList" -> CollegeListScreen(
-                                                onCollegeClick = { college ->
-                                                    selectedCollege = college
-                                                    overlayScreen = "CollegeInfo"
-                                                },
-                                                onBackClick = { overlayScreen = null }
-                                            )
-                                            "CollegeInfo" -> selectedCollege?.let { college ->
-                                                CollegeInfoScreen(
-                                                    college = college,
-                                                    onBackClick = { overlayScreen = "CollegeList" }
-                                                )
-                                            } ?: Box(Modifier.fillMaxSize())
-                                            null -> {
-                                                AnimatedContent(
-                                                    targetState = currentTab,
-                                                    modifier = Modifier.fillMaxSize(),
-                                                    transitionSpec = {
-                                                        (slideInHorizontally { width -> width / 4 } + fadeIn()) togetherWith
-                                                                (slideOutHorizontally { width -> -width / 4 } + fadeOut())
+                                            when (overlay) {
+                                                "Settings" -> SettingsScreen(
+                                                    isDarkTheme = isDarkTheme,
+                                                    onThemeChange = { isDarkTheme = it },
+                                                    onLogout = {
+                                                        sharedPreferences.edit().putBoolean("is_logged_in", false).putBoolean("is_admin", false).putString("student_number", null).apply()
+                                                        isLoggedIn = false; overlayScreen = null; studentNumber = ""
                                                     },
-                                                    label = "tab_content"
-                                                ) { tab ->
-                                                    when (tab) {
-                                                        MainTab.Dashboard -> DashboardScreen(
-                                                            surname = studentNumber,
-                                                            upcomingTasks = taskViewModel?.tasks?.collectAsState()?.value ?: emptyList(),
-                                                            announcementViewModel = announcementViewModel,
-                                                            onNavigateToAnnouncements = {
-                                                                overlayScreen = "Announcements"
-                                                            },
-                                                            onNavigateToTasks = {
-                                                                currentTab = MainTab.Tasks
-                                                            },
-                                                            onNavigateToCampusInfo = {
-                                                                overlayScreen = "CollegeList"
-                                                            },
-                                                            onNavigateToCollegeInfo = { college ->
-                                                                selectedCollege = college
-                                                                overlayScreen = "CollegeInfo"
-                                                            },
-                                                            onNavigateToProfile = {
-                                                                currentTab = MainTab.Profile
-                                                            },
-                                                            onNavigateToSettings = {
-                                                                overlayScreen = "Settings"
-                                                            },
-                                                            onNavigateToSchedule = {
-                                                                currentTab = MainTab.Tasks
-                                                            }
-                                                        )
-                                                        MainTab.Tasks -> taskViewModel?.let {
-                                                            ScheduleScreen(
-                                                                viewModel = it,
-                                                                showBackButton = false
+                                                    onBack = { overlayScreen = null }
+                                                )
+                                                "Announcements" -> AnnouncementScreen(
+                                                    onBack = { overlayScreen = null },
+                                                    viewModel = announcementViewModel,
+                                                    isAdmin = false
+                                                )
+                                                "CollegeList" -> CollegeListScreen(
+                                                    onCollegeClick = { college ->
+                                                        selectedCollege = college
+                                                        overlayScreen = "CollegeInfo"
+                                                    },
+                                                    onBackClick = { overlayScreen = null }
+                                                )
+                                                "CollegeInfo" -> selectedCollege?.let { college ->
+                                                    CollegeInfoScreen(
+                                                        college = college,
+                                                        onBackClick = { overlayScreen = "CollegeList" }
+                                                    )
+                                                } ?: Box(Modifier.fillMaxSize())
+                                                null -> {
+                                                    AnimatedContent(
+                                                        targetState = currentTab,
+                                                        modifier = Modifier.fillMaxSize(),
+                                                        transitionSpec = { (slideInHorizontally { width -> width / 4 } + fadeIn()) togetherWith (slideOutHorizontally { width -> -width / 4 } + fadeOut()) },
+                                                        label = "tab_content"
+                                                    ) { tab ->
+                                                        when (tab) {
+                                                            MainTab.Dashboard -> DashboardScreen(
+                                                                surname = studentNumber,
+                                                                upcomingTasks = taskViewModel?.tasks?.collectAsState()?.value ?: emptyList(),
+                                                                announcementViewModel = announcementViewModel,
+                                                                profileViewModel = profileViewModel,
+                                                                onNavigateToAnnouncements = { overlayScreen = "Announcements" },
+                                                                onNavigateToTasks = { currentTab = MainTab.Tasks },
+                                                                onNavigateToCampusInfo = { overlayScreen = "CollegeList" },
+                                                                onNavigateToCollegeInfo = { college -> selectedCollege = college; overlayScreen = "CollegeInfo" },
+                                                                onNavigateToProfile = { currentTab = MainTab.Profile },
+                                                                onNavigateToSettings = { overlayScreen = "Settings" },
+                                                                onNavigateToSchedule = { currentTab = MainTab.Tasks }
                                                             )
-                                                        } ?: Box(Modifier.fillMaxSize())
-                                                        MainTab.Profile -> {
-                                                            ProfileScreen(
-                                                                studentNumber = studentNumber,
-                                                                onBack = { },
-                                                                viewModel = profileViewModel,
-                                                                showBackButton = false,
-                                                                onSettingsClick = { overlayScreen = "Settings" }
-                                                            )
+                                                            MainTab.Tasks -> taskViewModel?.let { ScheduleScreen(viewModel = it, showBackButton = false) } ?: Box(Modifier.fillMaxSize())
+                                                            MainTab.Profile -> ProfileScreen(studentNumber = studentNumber, onBack = { }, viewModel = profileViewModel, showBackButton = false, onSettingsClick = { overlayScreen = "Settings" })
                                                         }
                                                     }
                                                 }
                                             }
                                         }
-                                        }
                                     }
                                 }
                             }
                         }
-                        currentScreen == "Register" -> RegisterScreen(
-                            viewModel = loginViewModel,
-                            onRegisterSuccess = { currentScreen = "Auth" },
-                            onBack = { currentScreen = "Auth" }
-                        )
-                        currentScreen == "AdminLogin" -> AdminLoginScreen(
-                            viewModel = loginViewModel,
-                            onLoginSuccess = { user, isAdm ->
-                                sharedPreferences.edit { 
-                                    putBoolean("is_logged_in", true) 
-                                    putBoolean("is_admin", true)
-                                    putString("student_number", user)
-                                }
-                                studentNumber = user
-                                isLoggedIn = true
-                                isAdmin = true
-                            },
-                            onBackToStudentLogin = { currentScreen = "Auth" }
-                        )
-                        else -> LoginScreen(
-                            viewModel = loginViewModel,
-                            onLoginSuccess = { studentNum, isAdm ->
-                                sharedPreferences.edit { 
-                                    putBoolean("is_logged_in", true) 
-                                    putBoolean("is_admin", false)
-                                    putString("student_number", studentNum)
-                                }
-                                studentNumber = studentNum
-                                isLoggedIn = true
-                                isAdmin = false
-                            },
-                            onRegisterClick = { currentScreen = "Register" },
-                            onAdminLoginClick = { currentScreen = "AdminLogin" }
-                        )
+                        // AUTHENTICATION SCREENS
+                        currentScreen == "Register" -> RegisterScreen(viewModel = loginViewModel, onRegisterSuccess = { currentScreen = "Auth" }, onBack = { currentScreen = "Auth" })
+                        currentScreen == "AdminLogin" -> AdminLoginScreen(viewModel = loginViewModel, onLoginSuccess = { user, isAdm -> 
+                            sharedPreferences.edit { 
+                                putBoolean("is_logged_in", true)
+                                putBoolean("is_admin", true)
+                                putString("student_number", user) 
+                            }
+                            studentNumber = user
+                            isLoggedIn = true
+                            isAdmin = true 
+                        }, onBackToStudentLogin = { currentScreen = "Auth" })
+                        else -> LoginScreen(viewModel = loginViewModel, onLoginSuccess = { studentNum, isAdm -> 
+                            sharedPreferences.edit { 
+                                putBoolean("is_logged_in", true)
+                                putBoolean("is_admin", false)
+                                putString("student_number", studentNum) 
+                            }
+                            studentNumber = studentNum
+                            isLoggedIn = true
+                            isAdmin = false
+                            isProfileSetupComplete = sharedPreferences.getBoolean("is_profile_setup_complete_${studentNum}", false)
+                        }, onRegisterClick = { currentScreen = "Register" }, onAdminLoginClick = { currentScreen = "AdminLogin" })
                     }
                 }
             }
         }
     }
 
+    // BACKGROUND WORKER (Deadline checker)
     private fun scheduleDeadlineWorker(studentNumber: String) {
-        val data = Data.Builder()
-            .putString("studentNumber", studentNumber)
-            .build()
-
-        val request = PeriodicWorkRequestBuilder<DeadlineWorker>(24, TimeUnit.HOURS)
-            .setInputData(data)
-            .build()
-
-        WorkManager.getInstance(this).enqueueUniquePeriodicWork(
-            "DeadlineWorker",
-            ExistingPeriodicWorkPolicy.KEEP,
-            request
-        )
+        val data = Data.Builder().putString("studentNumber", studentNumber).build()
+        val request = PeriodicWorkRequestBuilder<DeadlineWorker>(24, TimeUnit.HOURS).setInputData(data).build()
+        WorkManager.getInstance(this).enqueueUniquePeriodicWork("DeadlineWorker", ExistingPeriodicWorkPolicy.KEEP, request)
     }
 
+    // LOCAL NOTIFICATIONS
     private fun showAnnouncementNotification(title: String, content: String) {
         val channelId = "announcements_channel"
         val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(channelId, "Announcements", NotificationManager.IMPORTANCE_HIGH)
             notificationManager.createNotificationChannel(channel)
         }
-
-        val notification = NotificationCompat.Builder(this, channelId)
-            .setSmallIcon(R.drawable.ic_launcher_foreground)
-            .setContentTitle(title)
-            .setContentText(content)
-            .setPriority(NotificationCompat.PRIORITY_HIGH)
-            .setAutoCancel(true)
-            .build()
-
+        val notification = NotificationCompat.Builder(this, channelId).setSmallIcon(R.drawable.ic_launcher_foreground).setContentTitle(title).setContentText(content).setPriority(NotificationCompat.PRIORITY_HIGH).setAutoCancel(true).build()
         notificationManager.notify(System.currentTimeMillis().toInt(), notification)
     }
 }

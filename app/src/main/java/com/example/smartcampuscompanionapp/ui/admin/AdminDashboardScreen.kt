@@ -26,12 +26,19 @@ import com.example.smartcampuscompanionapp.ui.theme.AdminArgonGradientEnd
 import com.example.smartcampuscompanionapp.ui.theme.AdminArgonGradientStart
 import com.example.smartcampuscompanionapp.ui.viewmodel.AnnouncementViewModel
 
+/**
+ * DATA CLASS FOR ADMIN ACTIONS
+ */
 data class AdminAction(
     val title: String,
     val icon: ImageVector,
     val description: String
 )
 
+/**
+ * ADMIN DASHBOARD SCREEN
+ * Main portal for administrative controls with Argon-style theme
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AdminDashboardScreen(
@@ -41,6 +48,7 @@ fun AdminDashboardScreen(
     val announcements by announcementViewModel.allAnnouncements.collectAsState()
     var showLogoutDialog by remember { mutableStateOf(false) }
     
+    // LIST OF ADMINISTRATIVE ACTIONS
     val adminActions = listOf(
         AdminAction("Manage Announcements", Icons.Default.Campaign, "Post updates for students"),
         AdminAction("Student Records", Icons.Default.People, "Manage campus users"),
@@ -51,9 +59,9 @@ fun AdminDashboardScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
+            .background(MaterialTheme.colorScheme.background) // ADAPTIVE BACKGROUND
     ) {
-        // Argon Header with Bubbles
+        // ARGON HEADER WITH GRADIENT AND BUBBLES
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -65,6 +73,7 @@ fun AdminDashboardScreen(
                     )
                 )
         ) {
+            // DECORATIVE BACKGROUND BUBBLES
             Box(
                 modifier = Modifier
                     .size(250.dp)
@@ -83,6 +92,7 @@ fun AdminDashboardScreen(
                     .blur(30.dp)
             )
 
+            // HEADER CONTENT (Title and Logout)
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -120,7 +130,7 @@ fun AdminDashboardScreen(
             }
         }
 
-        // Body Content
+        // SCROLLABLE BODY CONTENT
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -129,6 +139,7 @@ fun AdminDashboardScreen(
         ) {
             Spacer(modifier = Modifier.height(24.dp))
 
+            // SECTION: CONTROLS
             Text(
                 text = "ADMINISTRATIVE CONTROLS",
                 style = MaterialTheme.typography.labelLarge,
@@ -138,6 +149,7 @@ fun AdminDashboardScreen(
             
             Spacer(modifier = Modifier.height(16.dp))
 
+            // GRID OF ACTION CARDS
             adminActions.chunked(2).forEach { rowItems ->
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -156,6 +168,7 @@ fun AdminDashboardScreen(
 
             Spacer(modifier = Modifier.height(8.dp))
             
+            // SECTION: STATS OVERVIEW
             Text(
                 text = "SYSTEM OVERVIEW",
                 style = MaterialTheme.typography.labelLarge,
@@ -177,6 +190,7 @@ fun AdminDashboardScreen(
         }
     }
 
+    // LOGOUT CONFIRMATION DIALOG
     if (showLogoutDialog) {
         AlertDialog(
             onDismissRequest = { showLogoutDialog = false },
@@ -202,6 +216,9 @@ fun AdminDashboardScreen(
     }
 }
 
+/**
+ * REUSABLE ACTION CARD COMPONENT
+ */
 @Composable
 fun AdminActionCard(
     item: AdminAction,
@@ -256,6 +273,9 @@ fun AdminActionCard(
     }
 }
 
+/**
+ * REUSABLE STAT CARD COMPONENT
+ */
 @Composable
 fun StatCard(label: String, value: String, modifier: Modifier = Modifier) {
     Card(

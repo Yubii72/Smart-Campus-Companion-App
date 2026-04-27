@@ -27,16 +27,22 @@ import com.example.smartcampuscompanionapp.ui.theme.AdminArgonGradientEnd
 import com.example.smartcampuscompanionapp.ui.theme.AdminArgonGradientStart
 import kotlinx.coroutines.delay
 
+/**
+ * STUDENT RECORDS SCREEN
+ * Displays registered users from Firebase Firestore
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StudentRecordsScreen(
     firebaseRepository: FirebaseStudentRepository = FirebaseStudentRepository(),
     onBack: () -> Unit
 ) {
+    // CLOUD DATA STREAM
     val students by firebaseRepository.getAllStudents().collectAsState(initial = null)
     var searchQuery by remember { mutableStateOf("") }
     var selectedStudent by remember { mutableStateOf<Student?>(null) }
     
+    // UI LOADING STATE
     var showLoading by remember { mutableStateOf(true) }
     LaunchedEffect(students) {
         if (students != null) {
@@ -47,6 +53,7 @@ fun StudentRecordsScreen(
         }
     }
 
+    // SEARCH FILTER LOGIC
     val filteredStudents = (students ?: emptyList()).filter {
         it.lastName.contains(searchQuery, ignoreCase = true) ||
         it.firstName.contains(searchQuery, ignoreCase = true) ||
@@ -54,7 +61,8 @@ fun StudentRecordsScreen(
     }
 
     Column(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
-        // Argon Header for Records
+        
+        // ARGON HEADER SECTION
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -66,6 +74,7 @@ fun StudentRecordsScreen(
                     )
                 )
         ) {
+            // GLASSMORPHISM EFFECT
             Box(
                 modifier = Modifier
                     .size(150.dp)
@@ -88,7 +97,8 @@ fun StudentRecordsScreen(
                     )
                 }
                 Spacer(modifier = Modifier.height(16.dp))
-                // Integrated Search in Header
+                
+                // INTEGRATED SEARCH BAR
                 Surface(
                     modifier = Modifier.fillMaxWidth().height(50.dp),
                     shape = RoundedCornerShape(12.dp),
@@ -114,14 +124,16 @@ fun StudentRecordsScreen(
             }
         }
 
-        // List Content
+        // MAIN LIST AREA
         Box(modifier = Modifier.fillMaxSize()) {
             when {
+                // LOADING VIEW
                 students == null && showLoading -> {
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                         CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
                     }
                 }
+                // EMPTY VIEW
                 (students == null || students!!.isEmpty()) && !showLoading -> {
                     Column(
                         modifier = Modifier.fillMaxSize().padding(32.dp),
@@ -132,6 +144,7 @@ fun StudentRecordsScreen(
                         Text("No students found.", color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                 }
+                // DATA LIST
                 else -> {
                     LazyColumn(
                         modifier = Modifier.fillMaxSize(),
@@ -147,11 +160,15 @@ fun StudentRecordsScreen(
         }
     }
 
+    // PROFILE DETAILS POPUP
     if (selectedStudent != null) {
         StudentDetailsDialog(student = selectedStudent!!, onDismiss = { selectedStudent = null })
     }
 }
 
+/**
+ * LIST ITEM COMPONENT
+ */
 @Composable
 fun StudentItem(student: Student, onClick: () -> Unit) {
     Card(
@@ -177,6 +194,9 @@ fun StudentItem(student: Student, onClick: () -> Unit) {
     }
 }
 
+/**
+ * PROFILE DIALOG COMPONENT
+ */
 @Composable
 fun StudentDetailsDialog(student: Student, onDismiss: () -> Unit) {
     AlertDialog(
@@ -193,6 +213,9 @@ fun StudentDetailsDialog(student: Student, onDismiss: () -> Unit) {
     )
 }
 
+/**
+ * REUSABLE DETAIL ROW
+ */
 @Composable
 fun DetailRow(label: String, value: String) {
     Column(modifier = Modifier.padding(vertical = 4.dp)) {

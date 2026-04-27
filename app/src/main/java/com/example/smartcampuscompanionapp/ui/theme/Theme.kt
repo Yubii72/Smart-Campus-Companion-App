@@ -16,19 +16,21 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 
+// DEFAULT DARK COLORS
 private val DarkColorScheme = darkColorScheme(
     primary = Purple80,
     secondary = PurpleGrey80,
     tertiary = Pink80
 )
 
+// DEFAULT LIGHT COLORS
 private val LightColorScheme = lightColorScheme(
     primary = Purple40,
     secondary = PurpleGrey40,
     tertiary = Pink40
 )
 
-// Admin Scheme - Light
+// ADMIN LIGHT THEME
 private val AdminArgonLightScheme = lightColorScheme(
     primary = AdminArgonPrimary,
     onPrimary = Color.White,
@@ -43,21 +45,25 @@ private val AdminArgonLightScheme = lightColorScheme(
     onErrorContainer = Color.White
 )
 
-// Admin Scheme - Dark
+// ADMIN DARK THEME
 private val AdminArgonDarkScheme = darkColorScheme(
     primary = AdminArgonPrimary,
     onPrimary = Color.White,
     secondary = AdminArgonGradientEnd,
     onSecondary = Color.White,
     tertiary = AdminArgonGradientStart,
-    background = Color(0xFF121212), // Dark Background
-    surface = Color(0xFF1E1E1E),    // Dark Surface
+    background = Color(0xFF121212),
+    surface = Color(0xFF1E1E1E),
     onBackground = Color.White,
     onSurface = Color.White,
     errorContainer = AdminArgonGradientEnd,
     onErrorContainer = Color.White
 )
 
+/**
+ * MAIN THEME WRAPPER
+ * Handles color scheme switching based on role and system settings
+ */
 @Composable
 fun SmartCampusCompanionAppTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
@@ -65,15 +71,23 @@ fun SmartCampusCompanionAppTheme(
     dynamicColor: Boolean = true,
     content: @Composable () -> Unit
 ) {
+    // SELECT COLOR SCHEME
     val colorScheme = when {
+        // Apply Argon theme if Admin
         isAdmin -> if (darkTheme) AdminArgonDarkScheme else AdminArgonLightScheme
+        
+        // Android 12+ Dynamic Color support
         dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
             val context = LocalContext.current
             if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
         }
+        
+        // Default modes
         darkTheme -> DarkColorScheme
         else -> LightColorScheme
     }
+
+    // UPDATE SYSTEM UI (Status Bar)
     val view = LocalView.current
     if (!view.isInEditMode) {
         SideEffect {
@@ -83,6 +97,7 @@ fun SmartCampusCompanionAppTheme(
         }
     }
 
+    // APPLY MATERIAL 3 THEME
     MaterialTheme(
         colorScheme = colorScheme,
         typography = Typography,

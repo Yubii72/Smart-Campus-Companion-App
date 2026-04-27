@@ -73,6 +73,7 @@ import android.app.NotificationManager
 import androidx.core.app.NotificationCompat
 import java.util.concurrent.TimeUnit
 
+// NAVIGATION ROUTES
 enum class MainTab(val title: String, val icon: ImageVector) {
     Dashboard("Dashboard", Icons.Default.Home),
     Tasks("Tasks", Icons.Default.CalendarToday),
@@ -87,6 +88,7 @@ enum class AdminTab(val title: String, val icon: ImageVector) {
 
 class MainActivity : ComponentActivity() {
 
+    // DATA INITIALIZATION
     private val database by lazy { AppDatabase.getDatabase(this) }
     private val studentRepository by lazy { StudentRepository(database.studentDao()) }
     private val announcementRepository by lazy { AnnouncementRepository(database.announcementDao()) }
@@ -112,7 +114,7 @@ class MainActivity : ComponentActivity() {
 
         val sharedPreferences = getSharedPreferences("smart_campus_prefs", Context.MODE_PRIVATE)
 
-        // Notification permission request (Android 13+)
+        // NOTIFICATION PERMISSIONS (Android 13+)
         val requestPermissionLauncher = registerForActivityResult(
             ActivityResultContracts.RequestPermission()
         ) { isGranted: Boolean -> }
@@ -141,9 +143,10 @@ class MainActivity : ComponentActivity() {
             }
             var studentNumber by remember { mutableStateOf(sharedPreferences.getString("student_number", "") ?: "") }
 
+            // THEME SWITCHER (Admin Argon vs Student)
             SmartCampusCompanionAppTheme(
                 darkTheme = isDarkTheme,
-                isAdmin = isAdmin && isLoggedIn // Apply cosmic theme if logged in as admin
+                isAdmin = isAdmin && isLoggedIn 
             ) {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
@@ -157,6 +160,7 @@ class MainActivity : ComponentActivity() {
                         )
                     } else null
 
+                    // FIREBASE SYNC (Cloud Listeners)
                     LaunchedEffect(isLoggedIn) {
                         if (isLoggedIn) {
                             FirebaseMessaging.getInstance().subscribeToTopic("announcements")
@@ -189,6 +193,7 @@ class MainActivity : ComponentActivity() {
                     var overlayScreen by remember { mutableStateOf<String?>(null) }
                     var selectedCollege by remember { mutableStateOf<College?>(null) }
 
+                    // ROLE-BASED LAYOUT
                     when {
                         !hasCompletedOnboarding -> OnboardingScreen(
                             onGetStarted = {
@@ -198,6 +203,7 @@ class MainActivity : ComponentActivity() {
                         )
                         isLoggedIn -> {
                             if (isAdmin) {
+                                // ADMIN UI
                                 Scaffold(
                                     modifier = Modifier.fillMaxSize(),
                                     contentWindowInsets = WindowInsets(0, 0, 0, 0),
@@ -290,6 +296,7 @@ class MainActivity : ComponentActivity() {
                                     }
                                 }
                             } else {
+                                // STUDENT UI
                                 Scaffold(
                                     modifier = Modifier.fillMaxSize(),
                                     contentWindowInsets = WindowInsets(0, 0, 0, 0),
@@ -376,6 +383,7 @@ class MainActivity : ComponentActivity() {
                                 }
                             }
                         }
+                        // AUTHENTICATION SCREENS
                         currentScreen == "Register" -> RegisterScreen(viewModel = loginViewModel, onRegisterSuccess = { currentScreen = "Auth" }, onBack = { currentScreen = "Auth" })
                         currentScreen == "AdminLogin" -> AdminLoginScreen(viewModel = loginViewModel, onLoginSuccess = { user, isAdm -> sharedPreferences.edit { putBoolean("is_logged_in", true); putBoolean("is_admin", true); putString("student_number", user) }; studentNumber = user; isLoggedIn = true; isAdmin = true }, onBackToStudentLogin = { currentScreen = "Auth" })
                         else -> LoginScreen(viewModel = loginViewModel, onLoginSuccess = { studentNum, isAdm -> sharedPreferences.edit { putBoolean("is_logged_in", true); putBoolean("is_admin", false); putString("student_number", studentNum) }; studentNumber = studentNum; isLoggedIn = true; isAdmin = false }, onRegisterClick = { currentScreen = "Register" }, onAdminLoginClick = { currentScreen = "AdminLogin" })
@@ -385,12 +393,14 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    // BACKGROUND WORKER (Deadline checker)
     private fun scheduleDeadlineWorker(studentNumber: String) {
         val data = Data.Builder().putString("studentNumber", studentNumber).build()
         val request = PeriodicWorkRequestBuilder<DeadlineWorker>(24, TimeUnit.HOURS).setInputData(data).build()
         WorkManager.getInstance(this).enqueueUniquePeriodicWork("DeadlineWorker", ExistingPeriodicWorkPolicy.KEEP, request)
     }
 
+    // LOCAL NOTIFICATIONS
     private fun showAnnouncementNotification(title: String, content: String) {
         val channelId = "announcements_channel"
         val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager

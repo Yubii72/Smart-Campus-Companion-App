@@ -32,7 +32,7 @@ fun AnnouncementScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Announcements") },
+                title = { Text("Announcements", fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Back")
@@ -44,7 +44,15 @@ fun AnnouncementScreen(
                             Icon(Icons.Default.Add, contentDescription = "Add Announcement")
                         }
                     }
-                }
+                },
+                colors = if (isAdmin) {
+                    TopAppBarDefaults.topAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.errorContainer,
+                        titleContentColor = MaterialTheme.colorScheme.onErrorContainer,
+                        navigationIconContentColor = MaterialTheme.colorScheme.onErrorContainer,
+                        actionIconContentColor = MaterialTheme.colorScheme.onErrorContainer
+                    )
+                } else TopAppBarDefaults.topAppBarColors()
             )
         }
     ) { paddingValues ->
@@ -76,6 +84,7 @@ fun AnnouncementScreen(
         if (showAddDialog) {
             AnnouncementDialog(
                 onDismiss = { showAddDialog = false },
+                isAdmin = isAdmin,
                 onConfirm = { title, content ->
                     val date = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault()).format(Date())
                     viewModel.addAnnouncement(title, content, date)
@@ -88,6 +97,7 @@ fun AnnouncementScreen(
             AnnouncementDialog(
                 initialTitle = announcement.title,
                 initialContent = announcement.content,
+                isAdmin = isAdmin,
                 onDismiss = { announcementToEdit = null },
                 onConfirm = { title, content ->
                     viewModel.updateAnnouncement(announcement.copy(title = title, content = content))
@@ -143,16 +153,16 @@ fun AnnouncementCard(
                     Text(
                         text = announcement.date,
                         style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.secondary
+                        color = if (isAdmin) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.secondary
                     )
                 }
                 if (isAdmin) {
                     Row {
                         IconButton(onClick = onEdit) {
-                            Icon(Icons.Default.Edit, contentDescription = "Edit", modifier = Modifier.size(20.dp))
+                            Icon(Icons.Default.Edit, contentDescription = "Edit", modifier = Modifier.size(20.dp), tint = MaterialTheme.colorScheme.error)
                         }
                         IconButton(onClick = onDelete) {
-                            Icon(Icons.Default.Delete, contentDescription = "Delete", modifier = Modifier.size(20.dp))
+                            Icon(Icons.Default.Delete, contentDescription = "Delete", modifier = Modifier.size(20.dp), tint = MaterialTheme.colorScheme.error)
                         }
                     }
                 }
@@ -166,7 +176,7 @@ fun AnnouncementCard(
             Text(
                 text = "By: ${announcement.author}",
                 style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.outline
+                color = if (isAdmin) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.outline
             )
         }
     }
@@ -176,6 +186,7 @@ fun AnnouncementCard(
 fun AnnouncementDialog(
     initialTitle: String = "",
     initialContent: String = "",
+    isAdmin: Boolean,
     onDismiss: () -> Unit,
     onConfirm: (String, String) -> Unit
 ) {
@@ -205,14 +216,15 @@ fun AnnouncementDialog(
         confirmButton = {
             Button(
                 onClick = { if (title.isNotBlank() && content.isNotBlank()) onConfirm(title, content) },
-                enabled = title.isNotBlank() && content.isNotBlank()
+                enabled = title.isNotBlank() && content.isNotBlank(),
+                colors = if (isAdmin) ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error) else ButtonDefaults.buttonColors()
             ) {
                 Text("Confirm")
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancel")
+                Text("Cancel", color = if (isAdmin) MaterialTheme.colorScheme.error else Color.Unspecified)
             }
         }
     )

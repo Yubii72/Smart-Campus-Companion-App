@@ -130,22 +130,25 @@ class MainActivity : ComponentActivity() {
             val systemInDarkTheme = isSystemInDarkTheme()
             var isDarkTheme by remember { mutableStateOf(systemInDarkTheme) }
 
-            SmartCampusCompanionAppTheme(darkTheme = isDarkTheme) {
+            var hasCompletedOnboarding by remember {
+                mutableStateOf(sharedPreferences.getBoolean("has_completed_onboarding", false))
+            }
+            var isLoggedIn by remember {
+                mutableStateOf(sharedPreferences.getBoolean("is_logged_in", false))
+            }
+            var isAdmin by remember {
+                mutableStateOf(sharedPreferences.getBoolean("is_admin", false))
+            }
+            var studentNumber by remember { mutableStateOf(sharedPreferences.getString("student_number", "") ?: "") }
+
+            SmartCampusCompanionAppTheme(
+                darkTheme = isDarkTheme,
+                isAdmin = isAdmin && isLoggedIn // Apply cosmic theme if logged in as admin
+            ) {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    var hasCompletedOnboarding by remember {
-                        mutableStateOf(sharedPreferences.getBoolean("has_completed_onboarding", false))
-                    }
-                    var isLoggedIn by remember {
-                        mutableStateOf(sharedPreferences.getBoolean("is_logged_in", false))
-                    }
-                    var isAdmin by remember {
-                        mutableStateOf(sharedPreferences.getBoolean("is_admin", false))
-                    }
-                    var studentNumber by remember { mutableStateOf(sharedPreferences.getString("student_number", "") ?: "") }
-
                     val taskViewModel: TaskViewModel? = if (isLoggedIn && !isAdmin && studentNumber.isNotBlank()) {
                         val factory = TaskViewModelFactory(firebaseTaskRepository, studentNumber)
                         androidx.lifecycle.viewmodel.compose.viewModel(

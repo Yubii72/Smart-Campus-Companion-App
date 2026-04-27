@@ -39,6 +39,7 @@ fun AdminDashboardScreen(
     onNavigationItemClick: (String) -> Unit = {}
 ) {
     val announcements by announcementViewModel.allAnnouncements.collectAsState()
+    var showLogoutDialog by remember { mutableStateOf(false) }
     
     val adminActions = listOf(
         AdminAction("Manage Announcements", Icons.Default.Campaign, "Post updates for students"),
@@ -50,7 +51,7 @@ fun AdminDashboardScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background) // Uses Theme background (White or Dark Gray)
+            .background(MaterialTheme.colorScheme.background)
     ) {
         // Argon Header with Bubbles
         Box(
@@ -98,7 +99,7 @@ fun AdminDashboardScreen(
                         fontWeight = FontWeight.Bold,
                         color = Color.White
                     )
-                    IconButton(onClick = { onNavigationItemClick("Logout") }) {
+                    IconButton(onClick = { showLogoutDialog = true }) {
                         Icon(Icons.Default.Logout, contentDescription = "Logout", tint = Color.White)
                     }
                 }
@@ -174,6 +175,30 @@ fun AdminDashboardScreen(
 
             Spacer(modifier = Modifier.height(32.dp))
         }
+    }
+
+    if (showLogoutDialog) {
+        AlertDialog(
+            onDismissRequest = { showLogoutDialog = false },
+            title = { Text("Logout Confirmation") },
+            text = { Text("Are you sure you want to logout from the Admin portal?") },
+            confirmButton = {
+                Button(
+                    onClick = { 
+                        showLogoutDialog = false
+                        onNavigationItemClick("Logout")
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                ) {
+                    Text("Logout", color = Color.White)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showLogoutDialog = false }) {
+                    Text("Cancel")
+                }
+            }
+        )
     }
 }
 

@@ -28,6 +28,7 @@ fun AnnouncementScreen(
     val announcements by viewModel.allAnnouncements.collectAsState()
     var showAddDialog by remember { mutableStateOf(false) }
     var announcementToEdit by remember { mutableStateOf<Announcement?>(null) }
+    var announcementToDelete by remember { mutableStateOf<Announcement?>(null) }
 
     Scaffold(
         topBar = {
@@ -73,7 +74,7 @@ fun AnnouncementScreen(
                             announcement = announcement,
                             isAdmin = isAdmin,
                             onEdit = { announcementToEdit = announcement },
-                            onDelete = { viewModel.deleteAnnouncement(announcement) },
+                            onDelete = { announcementToDelete = announcement },
                             onMarkAsRead = { viewModel.markAsRead(announcement) }
                         )
                     }
@@ -102,6 +103,30 @@ fun AnnouncementScreen(
                 onConfirm = { title, content ->
                     viewModel.updateAnnouncement(announcement.copy(title = title, content = content))
                     announcementToEdit = null
+                }
+            )
+        }
+
+        announcementToDelete?.let { announcement ->
+            AlertDialog(
+                onDismissRequest = { announcementToDelete = null },
+                title = { Text("Delete Announcement") },
+                text = { Text("Are you sure you want to delete this announcement? This action cannot be undone.") },
+                confirmButton = {
+                    Button(
+                        onClick = {
+                            viewModel.deleteAnnouncement(announcement)
+                            announcementToDelete = null
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                    ) {
+                        Text("Delete", color = Color.White)
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { announcementToDelete = null }) {
+                        Text("Cancel")
+                    }
                 }
             )
         }

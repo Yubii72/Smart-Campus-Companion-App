@@ -18,19 +18,31 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.smartcampuscompanionapp.data.local.entities.Student
-import com.example.smartcampuscompanionapp.data.repository.StudentRepository
+import com.example.smartcampuscompanionapp.data.repository.FirebaseStudentRepository
+import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StudentRecordsScreen(
-    repository: StudentRepository,
+    firebaseRepository: FirebaseStudentRepository = FirebaseStudentRepository(),
     onBack: () -> Unit
 ) {
-    val students by repository.allStudents.collectAsState(initial = emptyList())
+    val students by firebaseRepository.getAllStudents().collectAsState(initial = null)
     var searchQuery by remember { mutableStateOf("") }
     var selectedStudent by remember { mutableStateOf<Student?>(null) }
+    
+    // Timer to stop showing the loading spinner after 5 seconds if no data is found
+    var showLoading by remember { mutableStateOf(true) }
+    LaunchedEffect(students) {
+        if (students != null) {
+            showLoading = false
+        } else {
+            delay(5000)
+            showLoading = false
+        }
+    }
 
-    val filteredStudents = students.filter {
+    val filteredStudents = (students ?: emptyList()).filter {
         it.lastName.contains(searchQuery, ignoreCase = true) ||
         it.firstName.contains(searchQuery, ignoreCase = true) ||
         it.studentNumber.contains(searchQuery)
@@ -39,7 +51,7 @@ fun StudentRecordsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Student Records", fontWeight = FontWeight.Bold) },
+                title = { Text("Student Records (Cloud)", fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Back")
@@ -57,18 +69,53 @@ fun StudentRecordsScreen(
                 value = searchQuery,
                 onValueChange = { searchQuery = it },
                 modifier = Modifier.fillMaxWidth().padding(16.dp),
-                placeholder = { Text("Search by name or student number") },
+                placeholder = { Text("Search Firebase students...") },
                 leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
                 shape = RoundedCornerShape(12.dp)
             )
 
-            LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(16.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                items(filteredStudents) { student ->
-                    StudentItem(student = student, onClick = { selectedStudent = student })
+            when {
+                students == null && showLoading -> {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        CircularProgressIndicator(color = MaterialTheme.colorScheme.error)
+                    }
+                }
+                (students == null || students!!.isEmpty()) && !showLoading -> {
+                    Column(
+                        modifier = Modifier.fillMaxSize().padding(32.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        Icon(
+                            Icons.Default.PersonOff,
+                            contentDescription = null,
+                            modifier = Modifier.size(64.dp),
+                            tint = Color.Gray
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text(
+                            "No students found in Firebase.",
+                            style = MaterialTheme.typography.titleMedium,
+                            color = Color.Gray
+                        )
+                        Text(
+                            "Ensure students have registered on this or another device and Firestore rules allow reading.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = Color.Gray,
+                            textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                        )
+                    }
+                }
+                else -> {
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize(),
+                        contentPadding = PaddingValues(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        items(filteredStudents) { student ->
+                            StudentItem(student = student, onClick = { selectedStudent = student })
+                        }
+                    }
                 }
             }
         }
@@ -100,7 +147,7 @@ fun StudentItem(student: Student, onClick: () -> Unit) {
             ) {
                 Box(contentAlignment = Alignment.Center) {
                     Text(
-                        text = student.lastName.take(1).uppercase(),
+                        text = student.lastName.ifEmpty { "?" }.take(1).uppercase(),
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onErrorContainer
                     )
@@ -135,14 +182,14 @@ fun StudentDetailsDialog(student: Student, onDismiss: () -> Unit) {
                     DetailRow("College", student.college)
                     DetailRow("Program", student.program)
                     DetailRow("Year & Section", "${student.yearLevel} - ${student.section}")
-                    Divider(modifier = Modifier.padding(vertical = 8.dp))
+                    HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
                     DetailRow("Email", student.primaryEmailAddress)
                     DetailRow("Phone", student.primaryMobileNumber)
                     DetailRow("Address", student.presentAddress)
                     DetailRow("Birthday", student.dateOfBirth)
                     DetailRow("Sex", student.sexAtBirth)
                     DetailRow("Nationality", student.nationality)
-                    Divider(modifier = Modifier.padding(vertical = 8.dp))
+                    HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
                     DetailRow("Father's Name", student.fathersName)
                     DetailRow("Mother's Name", student.mothersName)
                 }
@@ -155,6 +202,6 @@ fun StudentDetailsDialog(student: Student, onDismiss: () -> Unit) {
 fun DetailRow(label: String, value: String) {
     Column(modifier = Modifier.padding(vertical = 4.dp)) {
         Text(label, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
-        Text(value, style = MaterialTheme.typography.bodyMedium)
+        Text(value.ifBlank { "N/A" }, style = MaterialTheme.typography.bodyMedium)
     }
 }
